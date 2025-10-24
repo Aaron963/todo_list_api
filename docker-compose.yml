@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    container_name: todo_list_api  # 自定义容器名称
+    ports:
+      - "9000:9000"
+    environment:
+      - ENV=development
+      - TZ=Asia/Shanghai  # 保留时区环境变量，确保容器内时区正确
+    volumes:
+      - .:/app  # 仅保留项目目录映射，确保代码实时同步
+    # command: gunicorn -c gunicorn-config.py manage:app  # 按需启用
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

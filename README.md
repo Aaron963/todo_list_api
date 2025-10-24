@@ -50,7 +50,7 @@
 
 # Tech Stack
 - Backend: Python (Flask + Flask-RESTX)
-- Database: PostgreSQL
+- Database: PostgreSQL, MongoDB, Redis
 - Auth: JWT (Flask-JWT-Extended)
 - Testing: pytest
 - DevOps: Docker, Docker Compose, GitHub Actions
@@ -58,8 +58,8 @@
 # How to Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/todo-list-api.git
+   git clone https://github.com/Aaron963/todo_list_api
    cd todo-list-api
 2. Start services with Docker Compose:
     ```bash
-   docker-compose up --build
+   docker compose -f .\docker-compose.yml up --build
