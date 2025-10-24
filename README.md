@@ -46,3 +46,20 @@
 3. Implement error handling and validations for API requests.
 4. Write unit tests and integration tests for the core functionality.
 5. Ensure your application can be easily run and tested locally.
+
+
+# Tech Stack
+- Backend: Python (Flask + Flask-RESTX)
+- Database: PostgreSQL
+- Auth: JWT (Flask-JWT-Extended)
+- Testing: pytest
+- DevOps: Docker, Docker Compose, GitHub Actions
+
+# How to Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/todo-list-api.git
+   cd todo-list-api
+2. Start services with Docker Compose:
+    ```bash
+   docker-compose up --build
