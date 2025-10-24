@@ -1,0 +1,27 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+verify_ssl = true
+
+[packages]
+flask = "==2.3.3"
+flask-restful = "==0.3.10"  # flask-restful
+flask-jwt-extended = "==4.6.0"   # JWT 认证
+psycopg2-binary = "==2.9.9"      # PostgreSQL 客户端
+pymongo = "==4.6.1"              # MongoDB 客户端
+sqlalchemy = "==2.0.23"          # PostgreSQL ORM
+pydantic = "==2.5.2"             # 数据验证（DTO）
+python-dotenv = "==1.0.0"        # 环境变量读取
+bcrypt = "==4.0.1"               # 密码哈希
+
+[dev-packages]
+pytest = "==7.4.3"               # 单元测试
+pytest-flask = "==1.2.0"         # Flask 测试工具
+flake8 = "==6.1.0"               # 代码风格检查
+black = "==23.10.1"              # 代码格式化
+ipython = "==8.17.2"             # 开发调试用交互式终端
+
+
+# Python 版本约束（与项目兼容的版本）
+[requires]
+python_version = "3.12"
