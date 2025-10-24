@@ -1,1 +1,1 @@
-## yynw
+## 用于初始化MongoDB和PG数据库
