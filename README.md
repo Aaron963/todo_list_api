@@ -59,61 +59,61 @@
 # Architecture
 ```bash
 todo-list-api/
-├── .github/                          # GitHub 配置文件
+├── .github/                          # GitHub configuration files
 │   └── workflows/
-│       └── ci.yml                    # CI/CD 流水线配置（自动化测试、构建）
-├── app/                              # 应用核心代码
-│   ├── __init__.py                   # 应用初始化（注册扩展、路由）
-│   ├── config.py                     # 配置文件（数据库连接、JWT 密钥等）
-│   ├── models/                       # 数据模型层
-│   │   ├── __init__.py               # 模型统一导出
-│   │   ├── users/                    # 用户/权限模型（PostgreSQL）
-│   │   │   ├── __init__.py           # 用户相关模型导出
-│   │   │   ├── user.py               # 用户核心模型（认证、基础信息）
-│   │   │   └── permission.py         # 列表权限模型（VIEW/EDIT 权限）
-│   │   └── todos/                    # TODO 模型（MongoDB）
-│   │       ├── __init__.py           # TODO 相关模型导出
-│   │       ├── list.py               # TODO 列表模型（元数据）
-│   │       └── item.py               # TODO 项模型（具体待办内容）
-│   ├── dto/                          # 数据传输对象（Pydantic 验证）
-│   │   ├── __init__.py               # DTO 统一导出
-│   │   ├── user_dto.py               # 用户相关 DTO（注册、登录）
-│   │   └── todo_dto.py               # TODO 相关 DTO（创建、更新）
-│   ├── services/                     # 业务逻辑层
-│   │   ├── __init__.py               # 服务统一导出
-│   │   ├── user_service.py           # 用户服务（注册、登录、权限验证）
-│   │   └── todo_service.py           # TODO 服务（列表/项的 CRUD、过滤排序）
-│   ├── controllers/                  # API 控制器层（Flask-RESTful）
-│   │   ├── __init__.py               # 控制器统一导出
-│   │   ├── auth_controller.py        # 认证控制器（注册、登录接口）
-│   │   ├── todo_list_controller.py   # TODO 列表控制器（列表 CRUD 接口）
-│   │   └── todo_item_controller.py   # TODO 项控制器（项 CRUD、过滤接口）
-│   ├── extensions/                   # 第三方扩展初始化
-│   │   ├── __init__.py               # 扩展统一导出
-│   │   ├── db_postgres.py            # PostgreSQL 连接初始化、会话管理
-│   │   ├── db_mongo.py               # MongoDB 连接初始化、集合获取
-│   │   └── jwt.py                    # JWT 扩展初始化（认证、令牌回调）
-│   └── utils/                        # 工具类
-│       ├── __init__.py               # 工具统一导出
-│       ├── errors.py                 # 自定义异常（资源不存在、权限不足等）
-│       └── error_handlers.py         # 全局异常处理装饰器
-├── tests/                            # 测试用例
-│   ├── __init__.py                   # 测试统一导出
-│   ├── conftest.py                   # 测试 fixtures（Flask 应用、数据库客户端）
-│   ├── unit/                         # 单元测试（业务逻辑）
-│   │   ├── test_user_service.py      # 用户服务测试
-│   │   └── test_todo_service.py      # TODO 服务测试
-│   └── integration/                  # 集成测试（API 接口）
-│       ├── test_auth_api.py          # 认证接口测试
-│       └── test_todo_api.py          # TODO 接口测试
-├── init_scripts/                     # 数据库初始化脚本
-│   ├── postgres_init.sql             # PostgreSQL 初始化（创建表、测试用户）
-│   └── mongo_init.js                 # MongoDB 初始化（创建集合、测试数据）
-├── Pipfile                           # 依赖管理（生产/开发依赖分离）
-├── Pipfile.lock                      # 依赖版本锁定（确保环境一致性）
-├── docker-compose.yml                # 开发环境配置（API + 双数据库 + 管理工具）
-├── Dockerfile.dev                    # 开发用 Dockerfile（依赖安装、代码挂载）
-└── README.md                         # 项目说明（启动步骤、API 文档、演示指南）
+│       └── ci.yml                    # CI/CD pipeline config (auto-testing, building)
+├── app/                              # Core application code
+│   ├── __init__.py                   # App initialization (register extensions, routes)
+│   ├── config.py                     # Configuration (DB connections, JWT secrets, etc.)
+│   ├── models/                       # Data models layer
+│   │   ├── __init__.py               # Unified model export
+│   │   ├── users/                    # User/Permission models (PostgreSQL)
+│   │   │   ├── __init__.py           # User-related model export
+│   │   │   ├── user.py               # Core user model (auth, basic info)
+│   │   │   └── permission.py         # List permission model (VIEW/EDIT permissions)
+│   │   └── todos/                    # TODO models (MongoDB)
+│   │       ├── __init__.py           # TODO-related model export
+│   │       ├── list.py               # TODO list model (metadata)
+│   │       └── item.py               # TODO item model (specific task content)
+│   ├── dto/                          # Data Transfer Objects (Pydantic validation)
+│   │   ├── __init__.py               # Unified DTO export
+│   │   ├── user_dto.py               # User-related DTOs (registration, login)
+│   │   └── todo_dto.py               # TODO-related DTOs (creation, update)
+│   ├── services/                     # Business logic layer
+│   │   ├── __init__.py               # Unified service export
+│   │   ├── user_service.py           # User service (registration, login, permission check)
+│   │   └── todo_service.py           # TODO service (CRUD, filtering, sorting for lists/items)
+│   ├── controllers/                  # API controller layer (Flask-RESTful)
+│   │   ├── __init__.py               # Unified controller export
+│   │   ├── auth_controller.py        # Auth controller (registration, login endpoints)
+│   │   ├── todo_list_controller.py   # TODO list controller (list CRUD endpoints)
+│   │   └── todo_item_controller.py   # TODO item controller (item CRUD, filtering endpoints)
+│   ├── extensions/                   # Third-party extension initialization
+│   │   ├── __init__.py               # Unified extension export
+│   │   ├── db/db_postgres.py            # PostgreSQL connection init & session management
+│   │   ├── db/db_mongo.py               # MongoDB connection init & collection retrieval
+│   │   └── jwt/jwt.py                    # JWT extension init (auth, token callbacks)
+│   └── utils/                        # Utility classes
+│       ├── __init__.py               # Unified utility export
+│       ├── errors.py                 # Custom exceptions (resource not found, permission denied, etc.)
+│       └── error_handlers.py         # Global exception handling decorator
+├── tests/                            # Test cases
+│   ├── __init__.py                   # Unified test export
+│   ├── conftest.py                   # Test fixtures (Flask app, DB clients)
+│   ├── unit/                         # Unit tests (business logic)
+│   │   ├── test_user_service.py      # User service tests
+│   │   └── test_todo_service.py      # TODO service tests
+│   └── integration/                  # Integration tests (API endpoints)
+│       ├── test_auth_api.py          # Auth API tests
+│       └── test_todo_api.py          # TODO API tests
+├── scripts/                          # DB initialization scripts
+│   ├── postgres_init.sql             # PostgreSQL init (table creation, test user)
+│   └── mongo_init.js                 # MongoDB init (collection creation, test data)
+├── Pipfile                           # Dependency management (separates prod/dev dependencies)
+├── Pipfile.lock                      # Dependency version lock (ensures env consistency)
+├── docker-compose.yml                # Dev environment config (API + dual DB + management tools)
+├── Dockerfile.dev                    # Dev-focused Dockerfile (dependency install, code mounting)
+└── README.md                         # Project documentation (setup steps, API docs, demo guide)
 ```
 
 # How to Setup
@@ -127,3 +127,7 @@ todo-list-api/
     ```bash
    docker compose -f .\docker-compose.yml up --build
    ```
+
+# API Documentaion
+
+https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-4e5a-8f01-7d870c73d919/collection/19369308-81ee660a-c614-4002-9993-f166636ee969?action=share&creator=19369308&active-environment=19369308-b05be95c-b0fa-4277-aa0c-4676c116cf8c
