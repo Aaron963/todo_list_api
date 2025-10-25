@@ -119,6 +119,15 @@ todo-list-api/
 # API Documentaion
 https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-4e5a-8f01-7d870c73d919/collection/19369308-81ee660a-c614-4002-9993-f166636ee969?action=share&creator=19369308&active-environment=19369308-b05be95c-b0fa-4277-aa0c-4676c116cf8c
 
+测试 API（Postman）：
+注册：POST http://localhost:5000/api/auth/register
+登录：POST http://localhost:5000/api/auth/login（获取 token）
+创建列表：POST http://localhost:5000/api/lists（带 token）
+操作项：POST http://localhost:5000/api/lists/{list_id}/items（带 token）
+测试账号：
+邮箱：test@example.com
+密码：test123
+
 
 # How to Setup In Dev/Test Envioroment
 1. Clone the repository:
@@ -126,15 +135,17 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
    git clone https://github.com/Aaron963/todo_list_api
    cd todo-list-api
    ```
-2. Open Pycharm IDE, create your pipenv envioroment, and install `pipenv`
+2. Open Pycharm IDE, create your pipenv envioroment and python version select 3.11, and install `pipenv`.Please make sure you had been installed PostgresSQL and MongoDB
    ```bash
    pipenv shell
    pipenv install
+   flask run --host=0.0.0.0 --port=5000 --reload
    ```
-   
+
 2. Start services with Docker Compose:
     ```bash
-   docker compose -f .\docker-compose.yml up --build
+   docker build -f Dockerfile -t todo-api:v1 .
+   docker compose -f .\docker-compose.yml up
    ```
 
 

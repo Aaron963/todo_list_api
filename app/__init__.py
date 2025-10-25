@@ -7,12 +7,12 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # 初始化扩展
+    # 初始化extensions
     init_postgres(app)
     init_mongo(app)
     init_jwt(app)
 
-    # 注册控制器路由
+    # 注册controller, route
     auth_api.init_app(app)
     todo_list_api.init_app(app)
     todo_item_api.init_app(app)

@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Enum, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
-from app.extensions.db_postgres import Base
+from app.extensions.db.db_postgres import Base
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

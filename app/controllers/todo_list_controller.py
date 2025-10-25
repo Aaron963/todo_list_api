@@ -8,8 +8,8 @@ from app.models.todos import TodoList
 from app.models.users import PermType, Permission
 from app.services.todo_service import TodoListService
 from app.services.user_service import UserService
-from app.extensions.db_postgres import get_db
-from app.extensions.db_mongo import get_mongo_collection
+from app.extensions.db.db_postgres import get_db
+from app.extensions.db.db_mongo import get_mongo_collection
 from app.utils.error_handlers import handle_exceptions
 
 api = Api(prefix="/api/lists")

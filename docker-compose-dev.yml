@@ -12,7 +12,7 @@ x-common-env:
 services:
   # todo-api service configuration
   todo-api:
-    image: todo-api:v1  # 与手动构建的镜像标签一致
+    build: .
     container_name: todo-api
     # Use common environment variables
     environment:
@@ -31,7 +31,7 @@ services:
     command: >
       sh -c "
         pipenv install --dev &&
-        flask run --host=0.0.0.0 --port=$$API_PORT --reload
+        flask run --host=0.0.0.0 --port=$$API_PORT
       "
 
   postgres:
@@ -43,7 +43,7 @@ services:
       POSTGRES_DB: todo_auth_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init_scripts/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -68,7 +68,7 @@ services:
     container_name: todo-mongo
     volumes:
       - mongo_data:/data/db
-      - ./scripts/mongo_init.js:/docker-entrypoint-initdb.d/init.js
+      - ./init_scripts/mongo_init.js:/docker-entrypoint-initdb.d/init.js
     ports:
       - "27017:27017"
     healthcheck:
