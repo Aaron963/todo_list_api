@@ -116,7 +116,29 @@ todo-list-api/
 └── README.md                         # Project documentation (setup steps, API docs, demo guide)
 ```
 
-# How to Setup
+# API Documentaion
+https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-4e5a-8f01-7d870c73d919/collection/19369308-81ee660a-c614-4002-9993-f166636ee969?action=share&creator=19369308&active-environment=19369308-b05be95c-b0fa-4277-aa0c-4676c116cf8c
+
+
+# How to Setup In Dev/Test Envioroment
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Aaron963/todo_list_api
+   cd todo-list-api
+   ```
+2. Open Pycharm IDE, create your pipenv envioroment, and install `pipenv`
+   ```bash
+   pipenv shell
+   pipenv install
+   ```
+   
+2. Start services with Docker Compose:
+    ```bash
+   docker compose -f .\docker-compose.yml up --build
+   ```
+
+
+# How to Setup In Prod Envioroment
 1. Clone the repository:
    ```bash
    git clone https://github.com/Aaron963/todo_list_api
@@ -127,7 +149,3 @@ todo-list-api/
     ```bash
    docker compose -f .\docker-compose.yml up --build
    ```
-
-# API Documentaion
-
-https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-4e5a-8f01-7d870c73d919/collection/19369308-81ee660a-c614-4002-9993-f166636ee969?action=share&creator=19369308&active-environment=19369308-b05be95c-b0fa-4277-aa0c-4676c116cf8c

@@ -13,7 +13,7 @@ api = Api(prefix="/api/auth")
 class Register(Resource):
     @handle_exceptions
     def post(self):
-        """注册新用户"""
+        """User Registration"""
         data = request.get_json()
         user_create = UserCreateDTO(**data)
 
@@ -46,7 +46,7 @@ class Register(Resource):
 class Login(Resource):
     @handle_exceptions
     def post(self):
-        """用户登录"""
+        """User Login"""
         data = request.get_json()
         user_login = UserLoginDTO(**data)
 
@@ -74,7 +74,6 @@ class Login(Resource):
                 }
             }
         })
-
 
 api.add_resource(Register, "/register")
 api.add_resource(Login, "/login")

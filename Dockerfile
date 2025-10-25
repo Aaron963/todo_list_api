@@ -1,5 +1,5 @@
 # 使用官方的 Python 3.12 基础镜像
-FROM python:3.12-slim
+FROM python:3.9-slim
 
 # 安装必要的系统依赖
 RUN apt-get update && apt-get install -y libpq-dev build-essential
@@ -23,17 +23,11 @@ RUN pipenv install --system
 
 RUN pip install redis
 
-RUN pip install selenium
-RUN pip install watchdog
-
 # 安装 tzdata 包
 RUN apt-get update && apt-get install -y tzdata
 
 # 设置时区为主机时区（例如：Asia/Shanghai）
 ENV TZ=Asia/Shanghai
-
-# 重新配置时区数据
-RUN dpkg-reconfigure -f noninteractive tzdata
 
 # 复制应用代码
 COPY . .
