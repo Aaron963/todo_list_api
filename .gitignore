@@ -3,9 +3,16 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-
 # C extensions
 *.so
+
+# ignore all enviroment files
+.env
+.env.prod
+.env.dev
+.env.test
+.env.local
+.env.*  # 匹配所有以 .env. 开头的文件（如 .env.test、.env.staging）
 
 # Distribution / packaging
 .Python
