@@ -40,7 +40,6 @@
    3. **Be prepared to present a live demo of your application during the upcoming interview, demonstrating the core features and code structure.** Please ensure you have your development environment ready and the application running locally before the interview.
 
 **Guidelines**
-
 1. Use a modern backend programming language and framework (e.g., [ASP.NET](http://asp.net/) Core, Python with Flask or Django, Node.js with Express, Java with Spring Boot, etc.).
 2. Choose a suitable database for storing TODOs and user data (e.g., PostgreSQL, MongoDB, MySQL, MSSQL).
 3. Implement error handling and validations for API requests.
@@ -71,10 +70,10 @@ todo-list-api/
 │   │   │   ├── __init__.py           # User-related model export
 │   │   │   ├── user.py               # Core user model (auth, basic info)
 │   │   │   └── permission.py         # List permission model (VIEW/EDIT permissions)
-│   │   └── todos/                    # TODO models (MongoDB)
+│   │   └── todos/                    # TODO-LIST and TODO-ITEM models (MongoDB)
 │   │       ├── __init__.py           # TODO-related model export
-│   │       ├── list.py               # TODO list model (metadata)
-│   │       └── item.py               # TODO item model (specific task content)
+│   │       ├── list.py               # TODO-List model (metadata)
+│   │       └── item.py               # TODO-Item model (specific task content)
 │   ├── dto/                          # Data Transfer Objects (Pydantic validation)
 │   │   ├── __init__.py               # Unified DTO export
 │   │   ├── user_dto.py               # User-related DTOs (registration, login)
@@ -82,12 +81,12 @@ todo-list-api/
 │   ├── services/                     # Business logic layer
 │   │   ├── __init__.py               # Unified service export
 │   │   ├── user_service.py           # User service (registration, login, permission check)
-│   │   └── todo_service.py           # TODO service (CRUD, filtering, sorting for lists/items)
+│   │   └── todo_service.py           # TODO-LIST and TODO-ITEM service (CRUD, filtering, sorting for lists/items)
 │   ├── controllers/                  # API controller layer (Flask-RESTful)
 │   │   ├── __init__.py               # Unified controller export
 │   │   ├── auth_controller.py        # Auth controller (registration, login endpoints)
-│   │   ├── todo_list_controller.py   # TODO list controller (list CRUD endpoints)
-│   │   └── todo_item_controller.py   # TODO item controller (item CRUD, filtering endpoints)
+│   │   ├── todo_list_controller.py   # TODO-List controller (list CRUD endpoints)
+│   │   └── todo_item_controller.py   # TODO-Item controller (item CRUD, filtering endpoints)
 │   ├── extensions/                   # Third-party extension initialization
 │   │   ├── __init__.py               # Unified extension export
 │   │   ├── db/db_postgres.py            # PostgreSQL connection init & session management
@@ -102,10 +101,10 @@ todo-list-api/
 │   ├── conftest.py                   # Test fixtures (Flask app, DB clients)
 │   ├── unit/                         # Unit tests (business logic)
 │   │   ├── test_user_service.py      # User service tests
-│   │   └── test_todo_service.py      # TODO service tests
+│   │   └── test_todo_service.py      # TODO-LIST and TODO-ITEM service tests
 │   └── integration/                  # Integration tests (API endpoints)
 │       ├── test_auth_api.py          # Auth API tests
-│       └── test_todo_api.py          # TODO API tests
+│       └── test_todo_api.py          # TODO-LIST API tests
 ├── scripts/                          # DB initialization scripts
 │   ├── postgres_init.sql             # PostgreSQL init (table creation, test user)
 │   └── mongo_init.js                 # MongoDB init (collection creation, test data)
@@ -119,6 +118,7 @@ todo-list-api/
 # API Documentaion
 https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-4e5a-8f01-7d870c73d919/collection/19369308-81ee660a-c614-4002-9993-f166636ee969?action=share&creator=19369308&active-environment=19369308-b05be95c-b0fa-4277-aa0c-4676c116cf8c
 
+``` bash
 测试 API（Postman）：
 注册：POST http://localhost:5000/api/auth/register
 登录：POST http://localhost:5000/api/auth/login（获取 token）
@@ -127,9 +127,14 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
 测试账号：
 邮箱：test@example.com
 密码：test123
+```
 
 
-# How to Setup In Dev/Test Envioroment
+## PGADMIN:
+URL: http://localhost:8081/
+
+
+# How to Setup In Dev or Test Envioroment
 1. Clone the repository:
    ```bash
    git clone https://github.com/Aaron963/todo_list_api
@@ -142,14 +147,14 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
    flask run --host=0.0.0.0 --port=5000 --reload
    ```
 
-2. Start services with Docker Compose:
+3. Start services with Docker Compose:
     ```bash
-   docker build -f Dockerfile -t todo-api:v1 .
-   docker compose -f .\docker-compose.yml up
+   docker-compose --env-file ./config/.env.dev --profile development up --build
+   or
+   docker-compose --env-file ./config/.env.test --profile testing up --build
    ```
 
-
-# How to Setup In Prod Envioroment
+# How to Setup In Dev or Test Envioroment
 1. Clone the repository:
    ```bash
    git clone https://github.com/Aaron963/todo_list_api
@@ -158,5 +163,5 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
 
 2. Start services with Docker Compose:
     ```bash
-   docker compose -f .\docker-compose.yml up --build
+   docker-compose --env-file ./config/.env.prod --profile production up --build
    ```

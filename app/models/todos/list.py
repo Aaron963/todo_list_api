@@ -21,5 +21,5 @@ class TodoList(BaseModel):
         return v.strip()
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         json_encoders = {datetime: lambda v: v.isoformat()}

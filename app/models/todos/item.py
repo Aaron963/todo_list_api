@@ -41,5 +41,5 @@ class TodoItem(BaseModel):
         return list(set(v))  # 去重
 
     class Config:
-        orm_mode = True
+        from_attributes = True
         json_encoders = {datetime: lambda v: v.isoformat()}

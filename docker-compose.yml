@@ -1,28 +1,28 @@
-version: "3.8"
-
-x-common-env:
-  &common-env
-  FLASK_APP: app/__init__.py
-  FLASK_ENV: development
-  JWT_SECRET_KEY: dev_jwt_secret_123
-  MONGODB_URI: mongodb://mongo:27017/todo_db
-  POSTGRES_URI: postgresql://todo_user:todo_pass@postgres:5432/todo_auth_db
-  API_PORT: 5000
-
 services:
   # todo-api service configuration
   todo-api:
-    image: todo-api:v1  # 与手动构建的镜像标签一致
-    container_name: todo-api
+    build:
+      context: .
+      dockerfile: Dockerfile  # 生产用 Dockerfile
+    image: todo-api:v1
+    container_name: todo-api-${FLASK_ENV}
     # Use common environment variables
     environment:
-      <<: *common-env
+      # 关键：所有配置从外部 .env 文件注入（应用代码从环境变量读）
+      - FLASK_ENV=${FLASK_ENV}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - API_PORT=${API_PORT}
     # volumes for live code updates
     volumes:
       - ./:/app
-      - /app/.venv
     ports:
-      - "5000:5000"
+      - "${API_PORT}:${API_PORT}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,65 +30,88 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-        pipenv install --dev &&
         flask run --host=0.0.0.0 --port=$$API_PORT --reload
       "
+    networks:
+      - todo-network
 
   postgres:
     image: postgres:16-alpine
-    container_name: todo-postgres
+    container_name: todo-postgres-${FLASK_ENV}
     environment:
-      POSTGRES_USER: todo_user
-      POSTGRES_PASSWORD: todo_pass
-      POSTGRES_DB: todo_auth_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/postgres_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data_${FLASK_ENV}:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U todo_user -d todo_auth_db"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       retries: 5
+    networks:
+      - todo-network
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: todo-pgadmin
+    container_name: todo-pgadmin-${FLASK_ENV}
     environment:
-      PGADMIN_DEFAULT_EMAIL: dev@example.com
-      PGADMIN_DEFAULT_PASSWORD: pgadmin_pass
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    volumes:
+      - pgadmin_data_${FLASK_ENV}:/var/lib/pgadmin
     ports:
       - "5050:80"
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - todo-network
+    profiles:
+      # 启动时加 --profile development 才会启动该服务
+      - development
 
   mongo:
     image: mongo:7-jammy
-    container_name: todo-mongo
+    container_name: todo-mongo-${FLASK_ENV}
     volumes:
-      - mongo_data:/data/db
-      - ./scripts/mongo_init.js:/docker-entrypoint-initdb.d/init.js
+      - mongo_data_${FLASK_ENV}:/data/db
     ports:
       - "27017:27017"
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
       interval: 5s
       retries: 5
+    networks:
+      - todo-network
 
   mongo-express:
     image: mongo-express
-    container_name: todo-mongo-express
+    container_name: todo-mongo-express-${FLASK_ENV}
     environment:
       ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_BASICAUTH_USERNAME: mongo_dev
-      ME_CONFIG_BASICAUTH_PASSWORD: mongo_pass
+      ME_CONFIG_BASICAUTH_USERNAME: ${ME_CONFIG_BASICAUTH_USERNAME}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${ME_CONFIG_BASICAUTH_PASSWORD}
     ports:
       - "8081:8081"
     depends_on:
       mongo:
         condition: service_healthy
+    networks:
+      - todo-network
+    profiles:
+      # 启动时加 --profile development 才会启动该服务
+      - development
 
+# -------------------------- 数据卷（带环境标识，避免混叠） --------------------------
 volumes:
-  postgres_data:
-  mongo_data:
+  postgres_data_development:
+  postgres_data_production:
+  mongo_data_development:
+  mongo_data_production:
+  pgadmin_data_development:
+
+networks:
+  todo-network:
+    driver: bridge
