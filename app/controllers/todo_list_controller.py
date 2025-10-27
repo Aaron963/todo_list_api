@@ -10,6 +10,7 @@ from app.services.user_service import UserService
 from app.extensions.db.db_postgres import get_db
 from app.extensions.db.db_mongo import get_mongo_collection
 from app.utils.error_handlers import handle_exceptions
+from app.utils.errors import ResourceNotFoundError
 from flask import request, jsonify
 from app.utils.json_encoder import process_data
 
@@ -55,7 +56,7 @@ class TodoListCollection(Resource):
         return {
             "code": 201,
             "message": "List created",
-            "data": process_data(new_list.__dict__)
+            "data": process_data(new_list.model_dump())
         }, 201
 
     @jwt_required()
@@ -76,10 +77,14 @@ class TodoListCollection(Resource):
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
         lists = [list_service.get_list(list_id) for list_id in list_ids]
+        
+        # 将Pydantic对象转换为字典
+        lists_data = [list_obj.model_dump() for list_obj in lists]
+        
         return {
             "code": 200,
-            "data": process_data(lists)
-        }, 201
+            "data": process_data(lists_data)
+        }, 200
 
 
 class TodoListResource(Resource):
@@ -100,7 +105,7 @@ class TodoListResource(Resource):
         todo_list = list_service.get_list(list_id)
         return {
             "code": 200,
-            "data": process_data(todo_list.__dict__)
+            "data": process_data(todo_list.model_dump())
         }, 200
 
     @jwt_required()
@@ -122,26 +127,48 @@ class TodoListResource(Resource):
         return {
             "code": 200,
             "message": "List updated",
-            "data": process_data(updated_list.__dict__)
+            "data": process_data(updated_list.model_dump())
         }, 200
 
     @jwt_required()
     @handle_exceptions
     def delete(self, list_id: str):
-        """删除列表"""
+        """delete list by list_id"""
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
         user_service.check_list_permission(user_id, list_id, PermType.EDIT)
 
+        # check list is exist
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
-        list_service.delete_list(list_id)
+        
+        try:
+            # 检查列表是否存在
+            list_service.get_list(list_id)
+        except ResourceNotFoundError:
+            raise ResourceNotFoundError(f"List {list_id} not found")
 
-        return {
-            "code": 200,
-            "message": f"List {list_id} deleted"
-        }, 200
+        # 删除MongoDB中的列表数据
+        deleted = list_service.delete_list(list_id)
+        
+        if not deleted:
+            raise ResourceNotFoundError(f"List {list_id} not found")
+
+        # 删除PostgreSQL中的权限记录
+        try:
+            deleted_perms = user_service.revoke_list_permissions(list_id)
+            return {
+                "code": 200,
+                "message": f"List {list_id} deleted successfully, {deleted_perms} permissions revoked"
+            }, 200
+        except Exception as e:
+            # 如果权限删除失败，记录错误但不影响主要删除操作
+            print(f"Warning: Failed to revoke permissions for list {list_id}: {e}")
+            return {
+                "code": 200,
+                "message": f"List {list_id} deleted, but some permissions may remain"
+            }, 200
 
 
 api.add_resource(TodoListCollection, "")

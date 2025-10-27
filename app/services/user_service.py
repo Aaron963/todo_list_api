@@ -24,7 +24,7 @@ class UserService:
         user = User(
             email=user_create.email,
             full_name=user_create.full_name,
-            role=UserRole.ADMIN
+            role=UserRole.USER
         )
         user.set_password(user_create.password)
         self.db.add(user)
@@ -83,3 +83,11 @@ class UserService:
         self.db.commit()
         self.db.refresh(perm)
         return perm
+
+    def revoke_list_permissions(self, list_id: str) -> int:
+        """删除指定列表的所有权限记录"""
+        deleted_count = self.db.query(Permission).filter(
+            Permission.list_id == list_id
+        ).delete()
+        self.db.commit()
+        return deleted_count
