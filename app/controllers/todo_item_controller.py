@@ -12,6 +12,8 @@ from app.services.user_service import UserService
 from app.extensions.db.db_postgres import get_db
 from app.extensions.db.db_mongo import get_mongo_collection
 from app.utils.error_handlers import handle_exceptions
+from app.utils.errors import ResourceNotFoundError
+from app.utils.json_encoder import process_data
 
 api = Api(prefix="/api/lists/<string:list_id>/items")
 
@@ -55,7 +57,7 @@ class TodoItemCollection(Resource):
         return {
             "code": 201,
             "message": "Item created",
-            "data": new_item.model_dump()
+            "data": process_data(new_item.model_dump())
         }, 201
 
     @jwt_required()
@@ -87,7 +89,7 @@ class TodoItemCollection(Resource):
 
         return {
             "code": 200,
-            "data": [item.dict() for item in items]
+            "data": process_data([item.model_dump() for item in items])
         }, 200
 
 
@@ -95,7 +97,7 @@ class TodoItemResource(Resource):
     @jwt_required()
     @handle_exceptions
     def get(self, list_id: str, item_id: str):
-        """获取单个项"""
+        """Get Single item by id"""
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
@@ -107,7 +109,7 @@ class TodoItemResource(Resource):
 
         return {
             "code": 200,
-            "data": item.dict()
+            "data": process_data(item.model_dump())
         }, 200
 
     @jwt_required()
@@ -135,13 +137,13 @@ class TodoItemResource(Resource):
         return {
             "code": 200,
             "message": "Item updated",
-            "data": updated_item.dict()
+            "data": process_data(updated_item.model_dump())
         }, 200
 
     @jwt_required()
     @handle_exceptions
     def delete(self, list_id: str, item_id: str):
-        """删除项"""
+        """删除待办事项 - 检查存在性并验证删除结果"""
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
@@ -149,11 +151,22 @@ class TodoItemResource(Resource):
 
         item_coll: Collection = get_mongo_collection("todo_items")
         item_service = TodoItemService(item_coll)
-        item_service.delete_item(item_id, list_id)
+        
+        # 先检查待办事项是否存在
+        try:
+            item_service.get_item(item_id, list_id)
+        except ResourceNotFoundError:
+            raise ResourceNotFoundError(f"Item {item_id} in list {list_id} not found")
+
+        # 执行删除操作
+        deleted = item_service.delete_item(item_id, list_id)
+        
+        if not deleted:
+            raise ResourceNotFoundError(f"Item {item_id} in list {list_id} not found or already deleted")
 
         return {
             "code": 200,
-            "message": f"Item {item_id} deleted"
+            "message": f"Item {item_id} deleted successfully"
         }, 200
 
 

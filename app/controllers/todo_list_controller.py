@@ -78,7 +78,7 @@ class TodoListCollection(Resource):
         list_service = TodoListService(list_coll)
         lists = [list_service.get_list(list_id) for list_id in list_ids]
         
-        # 将Pydantic对象转换为字典
+        # 将Pydantic对象转换为dict
         lists_data = [list_obj.model_dump() for list_obj in lists]
         
         return {
