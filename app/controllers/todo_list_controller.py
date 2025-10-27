@@ -54,7 +54,7 @@ class TodoListCollection(Resource):
             perm_type=PermType.EDIT
         )
         return {
-            "code": 201,
+            "code": 200,
             "message": "List created",
             "data": process_data(new_list.model_dump())
         }, 201
@@ -128,7 +128,7 @@ class TodoListResource(Resource):
             "code": 200,
             "message": "List updated",
             "data": process_data(updated_list.model_dump())
-        }, 200
+        }, 201
 
     @jwt_required()
     @handle_exceptions

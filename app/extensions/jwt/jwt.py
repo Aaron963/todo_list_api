@@ -16,7 +16,6 @@ def init_jwt(app):
     # 无效令牌回调
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
-        print('error', str(error))
         return {
             "code": 401,
             "message": "Invalid token"

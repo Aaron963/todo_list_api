@@ -9,7 +9,6 @@ BASE_URL = "http://localhost:5000/api"
 
 def test_register_success():
     """测试正常注册"""
-    print("测试用户注册...")
     url = f"{BASE_URL}/auth/register"
     data = {
         "email": "test_reg@example.com",

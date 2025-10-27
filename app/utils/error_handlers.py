@@ -17,7 +17,6 @@ def handle_exceptions(func):
             return {
                 "code": 400,
                 "message": "Invalid request data",
-                "errors": e.errors()
             }, 400
         except ResourceNotFoundError as e:
             return {
@@ -40,7 +39,6 @@ def handle_exceptions(func):
                 "message": str(e)
             }, 403
         except Exception as e:
-            print('Internal server error', str(e))
             return {
                 "code": 500,
                 "message": "Internal server error"

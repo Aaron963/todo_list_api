@@ -16,7 +16,6 @@ class TodoListService:
 
     def get_list(self, list_id: str) -> TodoList:
         doc = self.collection.find_one({"list_id": list_id})
-        print('doc2', doc)
         if not doc:
             raise ResourceNotFoundError(f"List {list_id} not found")
         return TodoList(**doc)
