@@ -24,7 +24,7 @@ class UserService:
         user = User(
             email=user_create.email,
             full_name=user_create.full_name,
-            role=UserRole.USER
+            role=UserRole.ADMIN
         )
         user.set_password(user_create.password)
         self.db.add(user)
@@ -47,10 +47,16 @@ class UserService:
     def check_list_permission(self, user_id: int, list_id: str, required_perm: PermType):
         perm = self.db.query(Permission).filter(
             Permission.user_id == user_id,
-            Permission.list_id == list_id,
-            Permission.perm_type == required_perm
+            Permission.list_id == list_id
         ).first()
+        
         if not perm:
+            raise ForbiddenError(f"User {user_id} has no permission for list {list_id}")
+        
+        # EDIT 权限包含 VIEW 权限
+        if required_perm == PermType.VIEW and perm.perm_type == PermType.EDIT:
+            return
+        elif perm.perm_type != required_perm:
             raise ForbiddenError(f"User {user_id} has no {required_perm} permission for list {list_id}")
 
     def grant_list_permission(self, user_id: int, list_id: str, perm_type: PermType) -> Permission:

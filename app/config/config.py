@@ -13,7 +13,7 @@ class Config:
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
-    # 拼接 PostgreSQL 连接地址（统一格式）
+    # 拼接 PostgreSQL 连接地址
     POSTGRES_URI: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     # MongoDB：load from .env

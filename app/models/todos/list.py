@@ -20,6 +20,10 @@ class TodoList(BaseModel):
             raise ValueError("List title cannot be empty")
         return v.strip()
 
+    def to_dict(self):
+        # transfer to json
+        return {"created_at": self.created_at.isoformat()}
+
     class Config:
         from_attributes = True
         json_encoders = {datetime: lambda v: v.isoformat()}

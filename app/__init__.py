@@ -6,7 +6,7 @@ from app.controllers import auth_api, todo_list_api, todo_item_api
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    
+
     # 禁用 Flask-RESTful 的默认错误处理，避免循环
     app.config['PROPAGATE_EXCEPTIONS'] = True
 

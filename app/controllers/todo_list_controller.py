@@ -10,6 +10,8 @@ from app.services.user_service import UserService
 from app.extensions.db.db_postgres import get_db
 from app.extensions.db.db_mongo import get_mongo_collection
 from app.utils.error_handlers import handle_exceptions
+from flask import request, jsonify
+from app.utils.json_encoder import process_data
 
 api = Api(prefix="/api/lists")
 
@@ -23,7 +25,10 @@ class TodoListCollection(Resource):
     @jwt_required()
     @handle_exceptions
     def post(self):
-        """创建TODO列表"""
+        """
+        description: Create List
+        API: {{base_url}}/api/lists
+        """
         user_id = get_jwt_identity()
         data = request.get_json()
         list_create = TodoListCreateDTO(**data)
@@ -41,24 +46,25 @@ class TodoListCollection(Resource):
             title=list_create.title,
             description=list_create.description
         ))
-
-        # 授予权限
+        # grant permissions to user
         user_service.grant_list_permission(
             user_id=user_id,
             list_id=new_list.list_id,
             perm_type=PermType.EDIT
         )
-
         return {
             "code": 201,
             "message": "List created",
-            "data": new_list.dict()
+            "data": process_data(new_list.__dict__)
         }, 201
 
     @jwt_required()
     @handle_exceptions
     def get(self):
-        """获取用户可访问的列表"""
+        """
+        description: Get All List
+        API: {{base_url}}/api/lists
+        """
         user_id = get_jwt_identity()
         db: Session = next(get_db())
 
@@ -69,19 +75,21 @@ class TodoListCollection(Resource):
         # 查询列表
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
-        lists = [list_service.get_list(id).dict() for id in list_ids]
-
+        lists = [list_service.get_list(list_id) for list_id in list_ids]
         return {
             "code": 200,
-            "data": lists
-        }, 200
+            "data": process_data(lists)
+        }, 201
 
 
 class TodoListResource(Resource):
     @jwt_required()
     @handle_exceptions
     def get(self, list_id: str):
-        """获取单个列表"""
+        """
+        description: Get Single List
+        API: /api/lists/{{list_id}}
+        """
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
@@ -90,10 +98,9 @@ class TodoListResource(Resource):
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
         todo_list = list_service.get_list(list_id)
-
         return {
             "code": 200,
-            "data": todo_list.dict()
+            "data": process_data(todo_list.__dict__)
         }, 200
 
     @jwt_required()
@@ -115,7 +122,7 @@ class TodoListResource(Resource):
         return {
             "code": 200,
             "message": "List updated",
-            "data": updated_list.dict()
+            "data": process_data(updated_list.__dict__)
         }, 200
 
     @jwt_required()

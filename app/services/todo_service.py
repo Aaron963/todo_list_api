@@ -10,12 +10,13 @@ class TodoListService:
         self.collection = collection
 
     def create_list(self, list_data: TodoList) -> TodoList:
-        list_dict = list_data.dict()
+        list_dict = list_data.model_dump()
         self.collection.insert_one(list_dict)
         return TodoList(**list_dict)
 
     def get_list(self, list_id: str) -> TodoList:
         doc = self.collection.find_one({"list_id": list_id})
+        print('doc2', doc)
         if not doc:
             raise ResourceNotFoundError(f"List {list_id} not found")
         return TodoList(**doc)

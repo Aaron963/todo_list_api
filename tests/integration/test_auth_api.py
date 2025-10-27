@@ -29,7 +29,7 @@ def test_register_success():
     assert result["data"]["user"]["email"] == "test_reg@example.com", "邮箱不匹配"
 
 
-def test_register_password_strength():
+def test_register_weak_password():
     """注册的密码强度不够"""
     url = f"{BASE_URL}/auth/register"
     response = requests.post(url, json={
@@ -60,6 +60,20 @@ def test_register_duplicate_email():
     result = response.json()
     assert response.status_code == 409, "重复注册应返回409"
     assert "Email dup@example.com already registered" in result["message"], "错误信息不正确"
+
+def test_auth_register_missing_field():
+    """用例AUTH-REG-004：注册缺少必填字段（无full_name）"""
+    url = f"{BASE_URL}/auth/register"
+    response = requests.post(url, json={
+        "email": "miss@example.com",
+        "password": "Miss123!"  # 缺少full_name
+    })
+    res_json = response.json()
+
+    # 验证响应
+    assert response.status_code == 400
+    assert res_json["code"] == 400
+    assert "Invalid request data" in res_json["message"]
 
 
 def test_login_success():

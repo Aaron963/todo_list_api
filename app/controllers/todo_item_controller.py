@@ -17,7 +17,7 @@ api = Api(prefix="/api/lists/<string:list_id>/items")
 
 
 def init_app(app):
-    """初始化TODO项API"""
+    """初始化TDL APP"""
     api.init_app(app)
 
 
@@ -25,7 +25,7 @@ class TodoItemCollection(Resource):
     @jwt_required()
     @handle_exceptions
     def post(self, list_id: str):
-        """创建TODO项"""
+        """创建TDL的Item"""
         user_id = get_jwt_identity()
         data = request.get_json()
         item_create = TodoItemCreateDTO(**data)
@@ -55,7 +55,7 @@ class TodoItemCollection(Resource):
         return {
             "code": 201,
             "message": "Item created",
-            "data": new_item.dict()
+            "data": new_item.model_dump()
         }, 201
 
     @jwt_required()

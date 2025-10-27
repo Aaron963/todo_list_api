@@ -1,10 +1,9 @@
 from flask_jwt_extended import JWTManager
 
-jwt = JWTManager()
 
 def init_jwt(app):
     """初始化JWT扩展"""
-    jwt.init_app(app)
+    jwt = JWTManager(app=app)
 
     # 令牌过期回调
     @jwt.expired_token_loader
@@ -17,10 +16,11 @@ def init_jwt(app):
     # 无效令牌回调
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
+        print('error', str(error))
         return {
             "code": 401,
             "message": "Invalid token"
-        }, 401
+        }
 
     # 未提供令牌回调
     @jwt.unauthorized_loader
