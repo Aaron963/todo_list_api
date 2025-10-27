@@ -1,6 +1,25 @@
-use todo_db
-db.createCollection("todo_lists")
-db.createCollection("todo_items")
+// 1. create admin manager
+use admin;
+db.createUser({
+  user: "mongo_admin",
+  pwd: "Admin@123",
+  roles: [{ role: "root", db: "admin" }]
+});
+
+// 2. create db table manager, give it the minium permission
+use todo_db;
+db.createUser({
+  user: "todo_user",
+  pwd: "Todo@123",
+  roles: [
+    { role: "readWrite", db: "todo_db" }
+  ]
+});
+
+// create some transition data
+use todo_db;
+db.createCollection("todo_lists");
+db.createCollection("todo_items");
 db.todo_lists.insertOne({
     list_id: "list_test_001",
     owner_id: "1",
@@ -8,7 +27,7 @@ db.todo_lists.insertOne({
     description: "sddfsdf",
     created_at: new Date(),
     updated_at: new Date()
-})
+});
 db.todo_items.insertOne({
     item_id: "item_test_001",
     list_id: "list_test_001",
@@ -20,5 +39,5 @@ db.todo_items.insertOne({
     tags: ["111", "2222"],
     created_at: new Date(),
     updated_at: new Date()
-})
-db.todo_items.createIndex({ list_id: 1 })
+});
+db.todo_items.createIndex({ list_id: 1 });

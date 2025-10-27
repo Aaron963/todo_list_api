@@ -1,4 +1,4 @@
-# SleekFlow Collaborative TO-DO List Application
+# SleekFlow Collaborative TO-DO List Application (short for "TDL")
 **Objective:** Develop a scalable and well-designed TODO list API application that allows users to manage their TODOs, demonstrating your backend development skills, API design expertise, and software engineering best practices.
 
 **Project Overview**
@@ -120,8 +120,8 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
 
 ``` bash
 测试 API（Postman）：
-注册：POST http://localhost:5000/api/auth/register
-登录：POST http://localhost:5000/api/auth/login（获取 token）
+Register：POST http://localhost:5000/api/auth/register
+Loin：POST http://localhost:5000/api/auth/login（获取 token）
 创建列表：POST http://localhost:5000/api/lists（带 token）
 操作项：POST http://localhost:5000/api/lists/{list_id}/items（带 token）
 测试账号：
@@ -143,15 +143,17 @@ URL: http://localhost:8081/
 2. Open Pycharm IDE, create your pipenv envioroment and python version select 3.11, and install `pipenv`.Please make sure you had been installed PostgresSQL and MongoDB
    ```bash
    pipenv shell
-   pipenv install
+   pipenv install --dev
    flask run --host=0.0.0.0 --port=5000 --reload
    ```
 
 3. Start services with Docker Compose:
     ```bash
-   docker-compose --env-file ./config/.env.dev --profile development up --build
+   docker-compose --env-file ./config/.env.dev up --build
+   ```
    or
-   docker-compose --env-file ./config/.env.test --profile testing up --build
+    ```bash
+   docker-compose --env-file ./config/.env.test up --build
    ```
 
 # How to Setup In Dev or Test Envioroment

@@ -34,3 +34,10 @@ class User(Base):
 
     def verify_password(self, password: str) -> bool:
         return pwd_context.verify(password, self.password_hash)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "full_name": self.full_name
+        }

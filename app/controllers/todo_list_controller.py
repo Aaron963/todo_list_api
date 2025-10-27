@@ -1,4 +1,3 @@
-from flask import request, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy.orm import Session
@@ -13,6 +12,11 @@ from app.extensions.db.db_mongo import get_mongo_collection
 from app.utils.error_handlers import handle_exceptions
 
 api = Api(prefix="/api/lists")
+
+
+def init_app(app):
+    """初始化TODO列表API"""
+    api.init_app(app)
 
 
 class TodoListCollection(Resource):
@@ -45,11 +49,11 @@ class TodoListCollection(Resource):
             perm_type=PermType.EDIT
         )
 
-        return jsonify({
+        return {
             "code": 201,
             "message": "List created",
             "data": new_list.dict()
-        }), 201
+        }, 201
 
     @jwt_required()
     @handle_exceptions
@@ -67,10 +71,10 @@ class TodoListCollection(Resource):
         list_service = TodoListService(list_coll)
         lists = [list_service.get_list(id).dict() for id in list_ids]
 
-        return jsonify({
+        return {
             "code": 200,
             "data": lists
-        })
+        }, 200
 
 
 class TodoListResource(Resource):
@@ -87,10 +91,10 @@ class TodoListResource(Resource):
         list_service = TodoListService(list_coll)
         todo_list = list_service.get_list(list_id)
 
-        return jsonify({
+        return {
             "code": 200,
             "data": todo_list.dict()
-        })
+        }, 200
 
     @jwt_required()
     @handle_exceptions
@@ -108,11 +112,11 @@ class TodoListResource(Resource):
         list_service = TodoListService(list_coll)
         updated_list = list_service.update_list(list_id, update_data)
 
-        return jsonify({
+        return {
             "code": 200,
             "message": "List updated",
             "data": updated_list.dict()
-        })
+        }, 200
 
     @jwt_required()
     @handle_exceptions
@@ -127,10 +131,10 @@ class TodoListResource(Resource):
         list_service = TodoListService(list_coll)
         list_service.delete_list(list_id)
 
-        return jsonify({
+        return {
             "code": 200,
             "message": f"List {list_id} deleted"
-        })
+        }, 200
 
 
 api.add_resource(TodoListCollection, "")

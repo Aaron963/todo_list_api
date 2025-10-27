@@ -15,11 +15,12 @@ class UserService:
         self.db = db
 
     def register_user(self, user_create: UserCreateDTO) -> User:
-        # 检查邮箱是否存在
+        # check email address is exist
         if self.db.query(User).filter(User.email == user_create.email).first():
+            print('check email address is exist， raise')
             raise DuplicateResourceError(f"Email {user_create.email} already registered")
 
-        # 创建用户
+        # creating new user
         user = User(
             email=user_create.email,
             full_name=user_create.full_name,

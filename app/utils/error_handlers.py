@@ -1,4 +1,3 @@
-from flask import jsonify
 from pydantic import ValidationError
 from app.utils.errors import (
     ResourceNotFoundError,
@@ -7,40 +6,45 @@ from app.utils.errors import (
     ForbiddenError
 )
 
+
 def handle_exceptions(func):
     """统一异常处理装饰器"""
+
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except ValidationError as e:
-            return jsonify({
+            return {
                 "code": 400,
                 "message": "Invalid request data",
                 "errors": e.errors()
-            }), 400
+            }, 400
         except ResourceNotFoundError as e:
-            return jsonify({
+            return {
                 "code": 404,
                 "message": str(e)
-            }), 404
+            }, 404
         except DuplicateResourceError as e:
-            return jsonify({
+            return {
                 "code": 409,
                 "message": str(e)
-            }), 409
+            }, 409
         except AuthenticationError as e:
-            return jsonify({
+            return {
                 "code": 401,
                 "message": str(e)
-            }), 401
+            }, 401
         except ForbiddenError as e:
-            return jsonify({
+            return {
                 "code": 403,
                 "message": str(e)
-            }), 403
+            }, 403
         except Exception as e:
-            return jsonify({
+            print('Internal server error', str(e))
+            return {
                 "code": 500,
                 "message": "Internal server error"
-            }), 500
+            }, 501
+
+    wrapper.__name__ = func.__name__
     return wrapper

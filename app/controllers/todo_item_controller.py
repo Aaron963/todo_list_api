@@ -16,6 +16,11 @@ from app.utils.error_handlers import handle_exceptions
 api = Api(prefix="/api/lists/<string:list_id>/items")
 
 
+def init_app(app):
+    """初始化TODO项API"""
+    api.init_app(app)
+
+
 class TodoItemCollection(Resource):
     @jwt_required()
     @handle_exceptions
@@ -47,11 +52,11 @@ class TodoItemCollection(Resource):
             tags=item_create.tags
         ))
 
-        return jsonify({
+        return {
             "code": 201,
             "message": "Item created",
             "data": new_item.dict()
-        }), 201
+        }, 201
 
     @jwt_required()
     @handle_exceptions
@@ -80,10 +85,10 @@ class TodoItemCollection(Resource):
             order=order
         )
 
-        return jsonify({
+        return {
             "code": 200,
             "data": [item.dict() for item in items]
-        })
+        }, 200
 
 
 class TodoItemResource(Resource):
@@ -100,10 +105,10 @@ class TodoItemResource(Resource):
         item_service = TodoItemService(item_coll)
         item = item_service.get_item(item_id, list_id)
 
-        return jsonify({
+        return {
             "code": 200,
             "data": item.dict()
-        })
+        }, 200
 
     @jwt_required()
     @handle_exceptions
@@ -127,11 +132,11 @@ class TodoItemResource(Resource):
         item_service = TodoItemService(item_coll)
         updated_item = item_service.update_item(item_id, list_id, update_data)
 
-        return jsonify({
+        return {
             "code": 200,
             "message": "Item updated",
             "data": updated_item.dict()
-        })
+        }, 200
 
     @jwt_required()
     @handle_exceptions
@@ -146,10 +151,10 @@ class TodoItemResource(Resource):
         item_service = TodoItemService(item_coll)
         item_service.delete_item(item_id, list_id)
 
-        return jsonify({
+        return {
             "code": 200,
             "message": f"Item {item_id} deleted"
-        })
+        }, 200
 
 
 api.add_resource(TodoItemCollection, "")
