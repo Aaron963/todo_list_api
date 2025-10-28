@@ -17,19 +17,25 @@ def setup_and_cleanup():
 def create_test_user(user_key: str, email: str, password: str, full_name: str):
     """创建测试用户并返回认证头"""
     # 注册用户
-    register_response = requests.post(f"{BASE_URL}/auth/register", json={
-        "email": email,
-        "password": password,
-        "full_name": full_name
-    })
+    register_response = requests.post(url=f"{BASE_URL}/auth/register",
+                                      json={
+                                          "email": email,
+                                          "password": password,
+                                          "full_name": full_name
+                                      })
     assert register_response.status_code == 201, f"用户注册失败: {user_key}"
-    
-    register_data = register_response.json()
-    
+
+    login_response = requests.post(url=f"{BASE_URL}/auth/login",
+                                   json={
+                                       "email": email,
+                                       "password": password
+                                   })
+    login_data = login_response.json()
+
     # 保存重要数据
-    test_data_manager.save_token(user_key, register_data["data"]["access_token"])
-    test_data_manager.save_user_id(user_key, str(register_data["data"]["user"]["id"]))
-    
+    test_data_manager.save_token(user_key, login_data["data"]["access_token"])
+    test_data_manager.save_user_id(user_key, str(login_data["data"]["user"]["id"]))
+
     return test_data_manager.get_auth_headers(user_key)
 
 
@@ -38,8 +44,10 @@ def create_test_list(auth_headers, list_key: str, title: str, description: str =
     data = {"title": title}
     if description:
         data["description"] = description
-    
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             headers=auth_headers,
+                             json=data)
     assert response.status_code == 201
     list_id = response.json()["data"]["list_id"]
     test_data_manager.save_list_id(list_key, list_id)
@@ -48,28 +56,34 @@ def create_test_list(auth_headers, list_key: str, title: str, description: str =
 
 def test_todo_item_create_success():
     """用例ITEM-CRE-001：已认证用户创建待办事项"""
-    auth_headers = create_test_user("test_user", "test_create@example.com", "Test123!", "Test Create User")
-    list_id = create_test_list(auth_headers, "test_list", "Test List", "Test Description")
-    
-    data = {
-        "title": "Work Task",
-        "description": "Complete the project",
-        "status": "NOT_STARTED",
-        "priority": "HIGH"
-    }
-    response = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json=data)
-    result = response.json()
+    auth_headers = create_test_user("test_user",
+                                    "test_create@example.com",
+                                    "Test123!",
+                                    "Test Create User")
+    list_id = create_test_list(auth_headers, "test_list",
+                               "Test List",
+                               "Test Description")
 
+    response = requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+                             headers=auth_headers,
+                             json={
+                                 "title": "Complete API Documentation",
+                                 "description": "Write Postman import documentation",
+                                 "due_date": "2024-12-31T23:59:59Z",
+                                 "status": "In Progress",
+                                 "priority": "High",
+                                 "tags": ["docs", "urgent"]
+                             })
+    result = response.json()
     # 验证响应
     assert response.status_code == 201
-    assert result["code"] == 201
+    assert result["code"] == 200
     assert result["message"] == "Item created"
-    assert result["data"]["title"] == "Work Task"
-    assert result["data"]["description"] == "Complete the project"
+    assert result["data"]["title"] == "Complete API Documentation"
+    assert result["data"]["description"] == "Write Postman import documentation"
     assert result["data"]["list_id"] == list_id
     assert "item_id" in result["data"]
-    
-    # 保存待办事项ID
+    #
     test_data_manager.save_item_id("work_item", result["data"]["item_id"])
 
 
@@ -80,36 +94,38 @@ def test_todo_item_create_unauthorized():
         "title": "Unauth Task",
         "description": "Should fail"
     }
-    response = requests.post(f"{BASE_URL}/lists/{list_id}/items", json=data)
+    response = requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+                             json=data)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 401
     assert result["code"] == 401
-    assert "未授权" in result["message"] or "unauthorized" in result["message"].lower()
+    assert "Authentication token is required" == result["message"]
 
 
 def test_todo_item_create_missing_title():
     """用例ITEM-CRE-003：创建待办事项缺少title字段"""
-    auth_headers = create_test_user("test_user", "test_missing@example.com", "Test123!", "Test Missing User")
-    list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
-    data = {
-        "description": "No Title Task"  # 缺少title
-    }
-    response = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json=data)
+    auth_headers = create_test_user("test_user",
+                                    "test_missing@example.com",
+                                    "Test123!",
+                                    "Test Missing User")
+    list_id = create_test_list(auth_headers,
+                               "test_list",
+                               "Test List")
+    response = requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+                             headers=auth_headers,
+                             json={
+                                 "description": "No Title Task"  # 缺少title
+                             })
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 400
     assert result["code"] == 400
-    assert "title" in result["message"].lower() or "field" in result["message"].lower()
+    assert "invalid request data" == result["message"]
 
 
 def test_todo_item_create_invalid_list():
     """用例ITEM-CRE-004：在不存在的列表中创建待办事项"""
     auth_headers = create_test_user("test_user", "test_invalid_list@example.com", "Test123!", "Test Invalid List User")
-    
+
     nonexistent_list_id = "list_nonexistent"
     data = {
         "title": "Task in Invalid List",
@@ -128,14 +144,14 @@ def test_todo_item_get_all():
     """用例ITEM-GET-001：查询列表中的所有待办事项"""
     auth_headers = create_test_user("test_user", "test_get_all@example.com", "Test123!", "Test Get All User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 先创建2个待办事项
     item1_response = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Task 1", "description": "First task"
     })
     assert item1_response.status_code == 201
     test_data_manager.save_item_id("item1", item1_response.json()["data"]["item_id"])
-    
+
     item2_response = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Task 2", "description": "Second task"
     })
@@ -156,7 +172,7 @@ def test_todo_item_get_single_success():
     """用例ITEM-GET-002：查询指定存在的待办事项"""
     auth_headers = create_test_user("test_user", "test_get_single@example.com", "Test123!", "Test Get Single User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 先创建待办事项
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Single Task", "description": "Get single test"
@@ -182,7 +198,7 @@ def test_todo_item_get_other_user_list():
     # 创建两个不同的用户
     user1_headers = create_test_user("user1", "user1@example.com", "Test123!", "User 1")
     user2_headers = create_test_user("user2", "user2@example.com", "Test123!", "User 2")
-    
+
     # 用户2创建列表和待办事项
     list_id = create_test_list(user2_headers, "other_list", "Other User List")
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=user2_headers, json={
@@ -205,7 +221,7 @@ def test_todo_item_get_nonexistent():
     """用例ITEM-GET-004：查询不存在的待办事项"""
     auth_headers = create_test_user("test_user", "test_nonexistent@example.com", "Test123!", "Test Nonexistent User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     nonexistent_item_id = "item_nonexistent_12345"
     response = requests.get(f"{BASE_URL}/lists/{list_id}/items/{nonexistent_item_id}", headers=auth_headers)
     result = response.json()
@@ -220,7 +236,7 @@ def test_todo_item_update_success():
     """用例ITEM-UPD-001：本人更新待办事项信息"""
     auth_headers = create_test_user("test_user", "test_update@example.com", "Test123!", "Test Update User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 先创建待办事项
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Old Task", "description": "Old desc"
@@ -251,7 +267,7 @@ def test_todo_item_update_other_user():
     # 创建两个不同的用户
     user1_headers = create_test_user("user1", "user1_update@example.com", "Test123!", "User 1 Update")
     user2_headers = create_test_user("user2", "user2_update@example.com", "Test123!", "User 2 Update")
-    
+
     # 用户2创建列表和待办事项
     list_id = create_test_list(user2_headers, "other_list", "Other User List")
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=user2_headers, json={
@@ -275,7 +291,7 @@ def test_todo_item_delete_success():
     """用例ITEM-DEL-001：本人删除待办事项"""
     auth_headers = create_test_user("test_user", "test_delete@example.com", "Test123!", "Test Delete User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 先创建待办事项
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "To Delete Task", "description": "Delete test"
@@ -302,7 +318,7 @@ def test_todo_item_delete_other_user():
     # 创建两个不同的用户
     user1_headers = create_test_user("user1", "user1_delete@example.com", "Test123!", "User 1 Delete")
     user2_headers = create_test_user("user2", "user2_delete@example.com", "Test123!", "User 2 Delete")
-    
+
     # 用户2创建列表和待办事项
     list_id = create_test_list(user2_headers, "other_list", "Other User List")
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=user2_headers, json={
@@ -323,9 +339,10 @@ def test_todo_item_delete_other_user():
 
 def test_todo_item_delete_nonexistent():
     """用例ITEM-DEL-003：删除不存在的待办事项"""
-    auth_headers = create_test_user("test_user", "test_delete_nonexistent@example.com", "Test123!", "Test Delete Nonexistent User")
+    auth_headers = create_test_user("test_user", "test_delete_nonexistent@example.com", "Test123!",
+                                    "Test Delete Nonexistent User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     nonexistent_item_id = "item_nonexistent_delete"
     response = requests.delete(f"{BASE_URL}/lists/{list_id}/items/{nonexistent_item_id}", headers=auth_headers)
     result = response.json()
@@ -340,7 +357,7 @@ def test_todo_item_create_empty_title():
     """用例ITEM-CRE-005：创建待办事项时title为空"""
     auth_headers = create_test_user("test_user", "test_empty_title@example.com", "Test123!", "Test Empty Title User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     data = {
         "title": "",  # 空标题
         "description": "Empty title test"
@@ -358,7 +375,7 @@ def test_todo_item_create_without_description():
     """用例ITEM-CRE-006：创建待办事项时不提供description"""
     auth_headers = create_test_user("test_user", "test_no_desc@example.com", "Test123!", "Test No Desc User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     data = {
         "title": "No Description Task"
         # 不提供description字段
@@ -375,9 +392,10 @@ def test_todo_item_create_without_description():
 
 def test_todo_item_update_partial():
     """用例ITEM-UPD-003：部分更新待办事项信息"""
-    auth_headers = create_test_user("test_user", "test_partial_update@example.com", "Test123!", "Test Partial Update User")
+    auth_headers = create_test_user("test_user", "test_partial_update@example.com", "Test123!",
+                                    "Test Partial Update User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 先创建待办事项
     create_res = requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Original Task", "description": "Original desc"
@@ -401,7 +419,7 @@ def test_todo_item_get_empty_list():
     """用例ITEM-GET-005：查询空列表中的待办事项"""
     auth_headers = create_test_user("test_user", "test_empty_list@example.com", "Test123!", "Test Empty List User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     response = requests.get(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers)
     result = response.json()
 
@@ -413,12 +431,14 @@ def test_todo_item_get_empty_list():
 
 def test_todo_item_update_nonexistent():
     """用例ITEM-UPD-004：更新不存在的待办事项"""
-    auth_headers = create_test_user("test_user", "test_update_nonexistent@example.com", "Test123!", "Test Update Nonexistent User")
+    auth_headers = create_test_user("test_user", "test_update_nonexistent@example.com", "Test123!",
+                                    "Test Update Nonexistent User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     nonexistent_item_id = "item_nonexistent_update"
     update_data = {"title": "Updated Task"}
-    response = requests.put(f"{BASE_URL}/lists/{list_id}/items/{nonexistent_item_id}", headers=auth_headers, json=update_data)
+    response = requests.put(f"{BASE_URL}/lists/{list_id}/items/{nonexistent_item_id}", headers=auth_headers,
+                            json=update_data)
     result = response.json()
 
     # 验证响应
@@ -431,7 +451,7 @@ def test_todo_item_filter_by_status():
     """用例ITEM-FILTER-001：按状态过滤待办事项"""
     auth_headers = create_test_user("test_user", "test_filter@example.com", "Test123!", "Test Filter User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 创建不同状态的待办事项
     requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Not Started Task", "status": "NOT_STARTED"
@@ -455,7 +475,7 @@ def test_todo_item_sort_by_due_date():
     """用例ITEM-SORT-001：按截止日期排序待办事项"""
     auth_headers = create_test_user("test_user", "test_sort@example.com", "Test123!", "Test Sort User")
     list_id = create_test_list(auth_headers, "test_list", "Test List")
-    
+
     # 创建不同截止日期的待办事项
     requests.post(f"{BASE_URL}/lists/{list_id}/items", headers=auth_headers, json={
         "title": "Later Task", "due_date": "2024-12-31"

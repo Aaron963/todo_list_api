@@ -55,7 +55,7 @@ class TodoItemCollection(Resource):
         ))
 
         return {
-            "code": 201,
+            "code": 200,
             "message": "Item created",
             "data": process_data(new_item.model_dump())
         }, 201
