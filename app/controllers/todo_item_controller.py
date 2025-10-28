@@ -67,7 +67,6 @@ class TodoItemCollection(Resource):
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
-
         # query the item
         status = request.args.get("status")
         due_date_str = request.args.get("due_date")
@@ -76,6 +75,7 @@ class TodoItemCollection(Resource):
         order = request.args.get("order", "asc")
         item_coll: Collection = get_mongo_collection("todo_items")
         item_service = TodoItemService(item_coll)
+
         items = item_service.list_items(
             list_id=list_id,
             status=TodoStatus(status) if status else None,

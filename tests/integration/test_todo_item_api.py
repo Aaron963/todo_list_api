@@ -553,31 +553,28 @@ def test_todo_item_filter_by_status():
                                "Test List")
 
     # 创建不同状态的待办事项
-    result = requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+    requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
                   headers=auth_headers,
                   json={
                       "title": "Not Started Task",
-                      "status": "NOT_STARTED"
+                      "status": "Not Started"
                   })
-    print('result', result)
 
-    result= requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+    requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
                   headers=auth_headers,
                   json={
                       "title": "In Progress Task",
-                      "status": "IN_PROGRESS"
+                      "status": "In Progress"
                   })
-    print('result', result)
 
     # 按状态过滤
-    response = requests.get(url=f"{BASE_URL}/lists/{list_id}/items?status=NOT_STARTED",
+    response = requests.get(url=f"{BASE_URL}/lists/{list_id}/items?status=Not Started",
                             headers=auth_headers)
     result = response.json()
-    print('result', result)
-    # assert response.status_code == 200
-    # assert result["code"] == 200
-    # assert len(result["data"]) == 1
-    # assert result["data"][0]["status"] == "NOT_STARTED"
+    assert response.status_code == 200
+    assert result["code"] == 200
+    assert len(result["data"]) == 1
+    assert result["data"][0]["status"] == "Not Started"
 
 
 def test_todo_item_sort_by_due_date():
