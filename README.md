@@ -49,10 +49,10 @@
 
 # Tech Stack
 - Backend: Python (Flask + Flask-Restful)
-- Database: PostgreSQL, MongoDB, Redis
+- Database: PostgreSQL, MongoDB
 - Auth: JWT (Flask-JWT-Extended)
 - Testing: pytest
-- DevOps: Docker, Docker Compose, GitHub Actions
+- DevOps: Docker, Docker Compose
 
 
 # Architecture
