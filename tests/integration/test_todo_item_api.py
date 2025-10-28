@@ -119,7 +119,7 @@ def test_todo_item_create_missing_title():
     result = response.json()
     assert response.status_code == 400
     assert result["code"] == 400
-    assert "invalid request data" == result["message"]
+    assert "Invalid request data" == result["message"]
 
 
 def test_todo_item_create_invalid_list():
@@ -553,13 +553,13 @@ def test_todo_item_filter_by_status():
                                "Test List")
 
     # 创建不同状态的待办事项
-    requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
-                  headers=auth_headers,
-                  json={
-                      "title": "Not Started Task",
-                      "status": "Not Started"
-                  })
-
+    response = requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
+                             headers=auth_headers,
+                             json={
+                                 "title": "Not Started Task",
+                                 "status": "Not Started"
+                             })
+    result = response.json()
     requests.post(url=f"{BASE_URL}/lists/{list_id}/items",
                   headers=auth_headers,
                   json={

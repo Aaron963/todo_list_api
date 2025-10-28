@@ -44,6 +44,7 @@ class TodoItemCollection(Resource):
         # 创建项
         item_coll: Collection = get_mongo_collection("todo_items")
         item_service = TodoItemService(item_coll)
+
         new_item = item_service.create_item(TodoItem(
             list_id=list_id,
             title=item_create.title,
