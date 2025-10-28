@@ -41,7 +41,7 @@ class TodoItemService:
         self.collection = collection
 
     def create_item(self, item_data: TodoItem) -> TodoItem:
-        item_dict = item_data.dict()
+        item_dict = item_data.model_dump()
         self.collection.insert_one(item_dict)
         return TodoItem(**item_dict)
 
