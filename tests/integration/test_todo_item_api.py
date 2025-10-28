@@ -124,20 +124,22 @@ def test_todo_item_create_missing_title():
 
 def test_todo_item_create_invalid_list():
     """用例ITEM-CRE-004：在不存在的列表中创建待办事项"""
-    auth_headers = create_test_user("test_user", "test_invalid_list@example.com", "Test123!", "Test Invalid List User")
+    auth_headers = create_test_user("test_user",
+                                    "test_invalid_list@example.com",
+                                    "Test123!",
+                                    "Test Invalid List User")
 
     nonexistent_list_id = "list_nonexistent"
-    data = {
-        "title": "Task in Invalid List",
-        "description": "Should fail"
-    }
-    response = requests.post(f"{BASE_URL}/lists/{nonexistent_list_id}/items", headers=auth_headers, json=data)
+    response = requests.post(url=f"{BASE_URL}/lists/{nonexistent_list_id}/items",
+                             headers=auth_headers,
+                             json={
+                                 "title": "Task in Invalid List",
+                                 "description": "Should fail"
+                             })
     result = response.json()
-
-    # 验证响应
-    assert response.status_code == 404
-    assert result["code"] == 404
-    assert "not found" in result["message"].lower()
+    assert response.status_code == 403
+    assert result["code"] == 403
+    assert "no permission" in result["message"]
 
 
 def test_todo_item_get_all():

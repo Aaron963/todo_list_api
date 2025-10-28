@@ -55,7 +55,7 @@
 - DevOps: Docker, Docker Compose
 
 
-# Architecture
+# Folder Architecture
 ```bash
 todo-list-api/
 ├── .github/                          # GitHub configuration files

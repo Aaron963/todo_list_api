@@ -67,16 +67,13 @@ class TodoItemCollection(Resource):
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
-        user_service.check_list_permission(user_id, list_id, PermType.VIEW)
 
-        # 解析查询参数
+        # query the item
         status = request.args.get("status")
         due_date_str = request.args.get("due_date")
         due_date = datetime.strptime(due_date_str, "%Y-%m-%d") if due_date_str else None
         sort_by = request.args.get("sort_by", "due_date")
         order = request.args.get("order", "asc")
-
-        # 查询项
         item_coll: Collection = get_mongo_collection("todo_items")
         item_service = TodoItemService(item_coll)
         items = item_service.list_items(
@@ -86,6 +83,8 @@ class TodoItemCollection(Resource):
             sort_by=sort_by,
             order=order
         )
+
+        user_service.check_list_permission(user_id, list_id, PermType.VIEW)
 
         return {
             "code": 200,
