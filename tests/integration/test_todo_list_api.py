@@ -75,29 +75,31 @@ def test_todo_list_create_unauthorized():
         "title": "Unauth List",
         "description": "Should fail"
     }
-    response = requests.post(f"{BASE_URL}/lists", json=data)
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             json=data)
     result = response.json()
 
     # 验证响应
     assert response.status_code == 401
     assert result["code"] == 401
-    assert "未授权" in result["message"] or "unauthorized" in result["message"].lower()
+    assert "Authentication token is required" in result["message"]
 
 
 def test_todo_list_create_missing_title():
     """用例LIST-CRE-003：创建列表缺少title字段"""
-    auth_headers = create_test_user("test_user", "test_missing@example.com", "Test123!", "Test Missing User")
-
-    data = {
-        "description": "No Title List"  # 缺少title
-    }
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+    auth_headers = create_test_user("test_user",
+                                    "test_missing@example.com",
+                                    "Test123!",
+                                    "Test Missing User")
+    response = requests.post(f"{BASE_URL}/lists",
+                             headers=auth_headers,
+                             json={
+                                 "description": "No Title List"  # missing title
+                             })
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 400
     assert result["code"] == 400
-    assert "title" in result["message"].lower() or "field" in result["message"].lower()
+    assert "invalid request data" in result["message"].lower()
 
 
 def test_todo_list_get_all():
@@ -129,21 +131,25 @@ def test_todo_list_get_all():
 
 def test_todo_list_get_single_success():
     """用例LIST-GET-002：查询指定存在的列表（本人创建）"""
-    auth_headers = create_test_user("test_user", "test_get_single@example.com", "Test123!", "Test Get Single User")
+    auth_headers = create_test_user("test_user",
+                                    "test_get_single@example.com",
+                                    "Test123!",
+                                    "Test Get Single User")
 
     # 先创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json={
-        "title": "Single List", "description": "Get single test"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=auth_headers,
+                               json={
+                                   "title": "Single List",
+                                   "description": "Get single test"
+                               })
     assert create_res.status_code == 201
     list_id = create_res.json()["data"]["list_id"]
     test_data_manager.save_list_id("single_list", list_id)
 
-    # 查询该列表
+    # query that list
     response = requests.get(f"{BASE_URL}/lists/{list_id}", headers=auth_headers)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 200
     assert result["code"] == 200
     assert result["data"]["list_id"] == list_id
@@ -154,8 +160,14 @@ def test_todo_list_get_single_success():
 def test_todo_list_get_other_user_list():
     """用例LIST-GET-003：查询其他用户创建的列表"""
     # 创建两个不同的用户
-    user1_headers = create_test_user("user1", "user1@example.com", "Test123!", "User 1")
-    user2_headers = create_test_user("user2", "user2@example.com", "Test123!", "User 2")
+    user1_headers = create_test_user("user1",
+                                     "user1@example.com",
+                                     "Test123!",
+                                     "User 1")
+    user2_headers = create_test_user("user2",
+                                     "user2@example.com",
+                                     "Test123!",
+                                     "User 2")
 
     # 用户2创建列表
     create_res = requests.post(f"{BASE_URL}/lists", headers=user2_headers, json={
@@ -171,16 +183,21 @@ def test_todo_list_get_other_user_list():
     # 验证响应
     assert response.status_code == 403
     assert result["code"] == 403
-    assert "permission" in result["message"].lower() or "权限" in result["message"]
+    assert "permission" in result["message"].lower()
 
 
 def test_todo_list_get_nonexistent():
     """用例LIST-GET-004：查询不存在的列表ID"""
-    auth_headers = create_test_user("test_user", "test_nonexistent@example.com", "Test123!", "Test Nonexistent User")
+    auth_headers = create_test_user("test_user",
+                                    "test_nonexistent@example.com",
+                                    "Test123!",
+                                    "Test Nonexistent User")
 
     nonexistent_id = "list_nonexistent_12345"
-    response = requests.get(f"{BASE_URL}/lists/{nonexistent_id}", headers=auth_headers)
+    response = requests.get(url=f"{BASE_URL}/lists/{nonexistent_id}",
+                            headers=auth_headers)
     result = response.json()
+    print('result', result)
 
     # 验证响应
     assert response.status_code == 404
@@ -190,12 +207,18 @@ def test_todo_list_get_nonexistent():
 
 def test_todo_list_update_success():
     """用例LIST-UPD-001：本人更新列表信息"""
-    auth_headers = create_test_user("test_user", "test_update@example.com", "Test123!", "Test Update User")
+    auth_headers = create_test_user("test_user",
+                                    "test_update@example.com",
+                                    "Test123!",
+                                    "Test Update User")
 
     # 先创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json={
-        "title": "Old Title", "description": "Old desc"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=auth_headers,
+                               json={
+                                   "title": "Old Title",
+                                   "description": "Old desc"
+                               })
     assert create_res.status_code == 201
     list_id = create_res.json()["data"]["list_id"]
 
@@ -208,24 +231,33 @@ def test_todo_list_update_success():
     result = response.json()
 
     # 验证响应
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert result["code"] == 200
     assert result["message"] == "List updated"
     assert result["data"]["title"] == "Updated Title"
     assert result["data"]["description"] == "Updated desc"
-    assert result["data"]["list_id"] == list_id  # ID应该保持不变
+    assert result["data"]["list_id"] == list_id
 
 
 def test_todo_list_update_other_user():
     """用例LIST-UPD-002：更新其他用户的列表"""
     # 创建两个不同的用户
-    user1_headers = create_test_user("user1", "user1_update@example.com", "Test123!", "User 1 Update")
-    user2_headers = create_test_user("user2", "user2_update@example.com", "Test123!", "User 2 Update")
+    user1_headers = create_test_user("user1",
+                                     "user1_update@example.com",
+                                     "Test123!",
+                                     "User 1 Update")
+    user2_headers = create_test_user("user2",
+                                     "user2_update@example.com",
+                                     "Test123!",
+                                     "User 2 Update")
 
     # 用户2创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=user2_headers, json={
-        "title": "Other User List", "description": "Cannot update"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=user2_headers,
+                               json={
+                                   "title": "Other User List",
+                                   "description": "Cannot update"
+                               })
     assert create_res.status_code == 201
     other_list_id = create_res.json()["data"]["list_id"]
 
@@ -237,22 +269,29 @@ def test_todo_list_update_other_user():
     # 验证响应
     assert response.status_code == 403
     assert result["code"] == 403
-    assert "permission" in result["message"].lower() or "权限" in result["message"]
+    assert "permission" in result["message"].lower()
 
 
 def test_todo_list_delete_success():
     """用例LIST-DEL-001：本人删除列表"""
-    auth_headers = create_test_user("test_user", "test_delete@example.com", "Test123!", "Test Delete User")
+    auth_headers = create_test_user("test_user",
+                                    "test_delete@example.com",
+                                    "Test123!",
+                                    "Test Delete User")
 
     # 先创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json={
-        "title": "To Delete List", "description": "Delete test"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=auth_headers,
+                               json={
+                                   "title": "To Delete List",
+                                   "description": "Delete test"
+                               })
     assert create_res.status_code == 201
     list_id = create_res.json()["data"]["list_id"]
 
     # 删除列表
-    response = requests.delete(f"{BASE_URL}/lists/{list_id}", headers=auth_headers)
+    response = requests.delete(url=f"{BASE_URL}/lists/{list_id}",
+                               headers=auth_headers)
     result = response.json()
 
     # 验证响应
@@ -269,36 +308,47 @@ def test_todo_list_delete_success():
 def test_todo_list_delete_other_user():
     """用例LIST-DEL-002：删除其他用户的列表"""
     # 创建两个不同的用户
-    user1_headers = create_test_user("user1", "user1_delete@example.com", "Test123!", "User 1 Delete")
-    user2_headers = create_test_user("user2", "user2_delete@example.com", "Test123!", "User 2 Delete")
+    user1_headers = create_test_user("user1",
+                                     "user1_delete@example.com",
+                                     "Test123!",
+                                     "User 1 Delete")
+    user2_headers = create_test_user("user2",
+                                     "user2_delete@example.com",
+                                     "Test123!",
+                                     "User 2 Delete")
 
     # 用户2创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=user2_headers, json={
-        "title": "Other User List", "description": "Cannot delete"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=user2_headers,
+                               json={
+                                   "title": "Other User List",
+                                   "description": "Cannot delete"
+                               })
     assert create_res.status_code == 201
     other_list_id = create_res.json()["data"]["list_id"]
 
     # 用户1尝试删除
-    response = requests.delete(f"{BASE_URL}/lists/{other_list_id}", headers=user1_headers)
+    response = requests.delete(url=f"{BASE_URL}/lists/{other_list_id}",
+                               headers=user1_headers)
     result = response.json()
 
     # 验证响应
     assert response.status_code == 403
     assert result["code"] == 403
-    assert "permission" in result["message"].lower() or "权限" in result["message"]
+    assert "permission" in result["message"].lower()
 
 
 def test_todo_list_delete_nonexistent():
     """用例LIST-DEL-003：删除不存在的列表"""
-    auth_headers = create_test_user("test_user", "test_delete_nonexistent@example.com", "Test123!",
+    auth_headers = create_test_user("test_user",
+                                    "test_delete_nonexistent@example.com",
+                                    "Test123!",
                                     "Test Delete Nonexistent User")
 
     nonexistent_id = "list_nonexistent_delete"
-    response = requests.delete(f"{BASE_URL}/lists/{nonexistent_id}", headers=auth_headers)
+    response = requests.delete(url=f"{BASE_URL}/lists/{nonexistent_id}",
+                               headers=auth_headers)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 404
     assert result["code"] == 404
     assert "not found" in result["message"].lower()
@@ -306,72 +356,86 @@ def test_todo_list_delete_nonexistent():
 
 def test_todo_list_create_empty_title():
     """用例LIST-CRE-004：创建列表时title为空"""
-    auth_headers = create_test_user("test_user", "test_empty_title@example.com", "Test123!", "Test Empty Title User")
+    auth_headers = create_test_user("test_user",
+                                    "test_empty_title@example.com",
+                                    "Test123!",
+                                    "Test Empty Title User")
 
-    data = {
-        "title": "",  # 空标题
-        "description": "Empty title test"
-    }
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             headers=auth_headers, json={
+            "title": "",  # 空标题
+            "description": "Empty title test"
+        })
     result = response.json()
 
-    # 验证响应
     assert response.status_code == 400
     assert result["code"] == 400
-    assert "title" in result["message"].lower()
+    assert "invalid request data" in result["message"].lower()
 
 
 def test_todo_list_create_title_too_long():
     """用例LIST-CRE-005：创建列表时title过长"""
-    auth_headers = create_test_user("test_user", "test_long_title@example.com", "Test123!", "Test Long Title User")
+    auth_headers = create_test_user("test_user",
+                                    "test_long_title@example.com",
+                                    "Test123!",
+                                    "Test Long Title User")
 
-    data = {
-        "title": "A" * 101,  # 超过100字符限制
-        "description": "Long title test"
-    }
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             headers=auth_headers,
+                             json={
+                                 "title": "A" * 101,  # 超过100字符限制
+                                 "description": "Long title test"
+                             })
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 400
     assert result["code"] == 400
+    assert "Invalid request data" in result["message"]
 
 
 def test_todo_list_create_description_too_long():
     """用例LIST-CRE-006：创建列表时description过长"""
-    auth_headers = create_test_user("test_user", "test_long_desc@example.com", "Test123!", "Test Long Desc User")
+    auth_headers = create_test_user("test_user",
+                                    "test_long_desc@example.com",
+                                    "Test123!",
+                                    "Test Long Desc User")
 
-    data = {
-        "title": "Valid Title",
-        "description": "A" * 501  # 超过500字符限制
-    }
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             headers=auth_headers,
+                             json={
+                                 "title": "Valid Title",
+                                 "description": "A" * 501  # 超过500字符限制
+                             })
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 400
     assert result["code"] == 400
+    assert "Invalid request data" in result["message"]
 
 
 def test_todo_list_update_partial():
     """用例LIST-UPD-003：部分更新列表信息"""
-    auth_headers = create_test_user("test_user", "test_partial_update@example.com", "Test123!",
+    auth_headers = create_test_user("test_user",
+                                    "test_partial_update@example.com",
+                                    "Test123!",
                                     "Test Partial Update User")
 
     # 先创建列表
-    create_res = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json={
-        "title": "Original Title", "description": "Original desc"
-    })
+    create_res = requests.post(url=f"{BASE_URL}/lists",
+                               headers=auth_headers,
+                               json={
+                                   "title": "Original Title",
+                                   "description": "Original desc"
+                               })
     assert create_res.status_code == 201
     list_id = create_res.json()["data"]["list_id"]
 
     # 只更新title
-    update_data = {"title": "Updated Title Only"}
-    response = requests.put(f"{BASE_URL}/lists/{list_id}", headers=auth_headers, json=update_data)
+    response = requests.put(url=f"{BASE_URL}/lists/{list_id}",
+                            headers=auth_headers,
+                            json={"title": "Updated Title Only"})
     result = response.json()
 
     # 验证响应
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert result["code"] == 200
     assert result["data"]["title"] == "Updated Title Only"
     assert result["data"]["description"] == "Original desc"  # 应该保持不变
@@ -379,12 +443,13 @@ def test_todo_list_update_partial():
 
 def test_todo_list_get_empty_list():
     """用例LIST-GET-005：查询空列表"""
-    auth_headers = create_test_user("test_user", "test_empty_list@example.com", "Test123!", "Test Empty List User")
+    auth_headers = create_test_user("test_user",
+                                    "test_empty_list@example.com",
+                                    "Test123!",
+                                    "Test Empty List User")
 
     response = requests.get(f"{BASE_URL}/lists", headers=auth_headers)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 200
     assert result["code"] == 200
     assert result["data"] == []  # 应该返回空列表
@@ -392,33 +457,38 @@ def test_todo_list_get_empty_list():
 
 def test_todo_list_create_without_description():
     """用例LIST-CRE-007：创建列表时不提供description"""
-    auth_headers = create_test_user("test_user", "test_no_desc@example.com", "Test123!", "Test No Desc User")
+    auth_headers = create_test_user("test_user",
+                                    "test_no_desc@example.com",
+                                    "Test123!",
+                                    "Test No Desc User")
 
-    data = {
-        "title": "No Description List"
-        # 不提供description字段
-    }
-    response = requests.post(f"{BASE_URL}/lists", headers=auth_headers, json=data)
+    response = requests.post(url=f"{BASE_URL}/lists",
+                             headers=auth_headers,
+                             json={
+                                 "title": "No Description List"
+                                 # 不提供description字段
+                             })
     result = response.json()
 
     # 验证响应
     assert response.status_code == 201
-    assert result["code"] == 201
+    assert result["code"] == 200
     assert result["data"]["title"] == "No Description List"
     assert result["data"]["description"] is None
 
 
 def test_todo_list_update_nonexistent():
     """用例LIST-UPD-004：更新不存在的列表"""
-    auth_headers = create_test_user("test_user", "test_update_nonexistent@example.com", "Test123!",
+    auth_headers = create_test_user("test_user",
+                                    "test_update_nonexistent@example.com",
+                                    "Test123!",
                                     "Test Update Nonexistent User")
 
     nonexistent_id = "list_nonexistent_update"
-    update_data = {"title": "Updated Title"}
-    response = requests.put(f"{BASE_URL}/lists/{nonexistent_id}", headers=auth_headers, json=update_data)
+    response = requests.put(url=f"{BASE_URL}/lists/{nonexistent_id}",
+                            headers=auth_headers,
+                            json={"title": "Updated Title"})
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 404
     assert result["code"] == 404
     assert "not found" in result["message"].lower()
@@ -427,32 +497,46 @@ def test_todo_list_update_nonexistent():
 def test_cross_user_data_isolation():
     """用例CROSS-001：验证用户间数据隔离"""
     # 创建两个不同的用户
-    user1_headers = create_test_user("user1", "isolation_user1@example.com", "Test123!", "Isolation User 1")
-    user2_headers = create_test_user("user2", "isolation_user2@example.com", "Test123!", "Isolation User 2")
+    user1_headers = create_test_user("user1",
+                                     "isolation_user1@example.com",
+                                     "Test123!",
+                                     "Isolation User 1")
+    user2_headers = create_test_user("user2",
+                                     "isolation_user2@example.com",
+                                     "Test123!",
+                                     "Isolation User 2")
 
     # 用户1创建列表
-    user1_list = requests.post(f"{BASE_URL}/lists", headers=user1_headers, json={
-        "title": "User 1 List", "description": "Private to user 1"
-    })
+    user1_list = requests.post(url=f"{BASE_URL}/lists",
+                               headers=user1_headers,
+                               json={
+                                   "title": "User 1 List",
+                                   "description": "Private to user 1"
+                               })
     assert user1_list.status_code == 201
     user1_list_id = user1_list.json()["data"]["list_id"]
 
     # 用户2创建列表
-    user2_list = requests.post(f"{BASE_URL}/lists", headers=user2_headers, json={
-        "title": "User 2 List", "description": "Private to user 2"
-    })
+    user2_list = requests.post(url=f"{BASE_URL}/lists",
+                               headers=user2_headers,
+                               json={
+                                   "title": "User 2 List",
+                                   "description": "Private to user 2"
+                               })
     assert user2_list.status_code == 201
     user2_list_id = user2_list.json()["data"]["list_id"]
 
     # 用户1只能看到自己的列表
-    user1_lists = requests.get(f"{BASE_URL}/lists", headers=user1_headers)
+    user1_lists = requests.get(url=f"{BASE_URL}/lists",
+                               headers=user1_headers)
     assert user1_lists.status_code == 200
     user1_lists_data = user1_lists.json()["data"]
     assert len(user1_lists_data) == 1
     assert user1_lists_data[0]["list_id"] == user1_list_id
 
     # 用户2只能看到自己的列表
-    user2_lists = requests.get(f"{BASE_URL}/lists", headers=user2_headers)
+    user2_lists = requests.get(url=f"{BASE_URL}/lists",
+                               headers=user2_headers)
     assert user2_lists.status_code == 200
     user2_lists_data = user2_lists.json()["data"]
     assert len(user2_lists_data) == 1

@@ -69,16 +69,16 @@ class TodoListCollection(Resource):
         user_id = get_jwt_identity()
         db: Session = next(get_db())
 
-        # 获取有权限的列表ID
+        # 1, check permission
         perms = db.query(Permission.list_id).filter(Permission.user_id == user_id).all()
         list_ids = [p.list_id for p in perms]
 
-        # 查询列表
+        # 2, query list
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
         lists = [list_service.get_list(list_id) for list_id in list_ids]
         
-        # 将Pydantic对象转换为dict
+        # 3, Transfer Pandantic object todict
         lists_data = [list_obj.model_dump() for list_obj in lists]
         
         return {
@@ -97,12 +97,15 @@ class TodoListResource(Resource):
         """
         user_id = get_jwt_identity()
         db: Session = next(get_db())
-        user_service = UserService(db)
-        user_service.check_list_permission(user_id, list_id, PermType.VIEW)
-
+        # 1, check item is available
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
         todo_list = list_service.get_list(list_id)
+
+        # 2, check permission
+        user_service = UserService(db)
+        user_service.check_list_permission(user_id, list_id, PermType.VIEW)
+
         return {
             "code": 200,
             "data": process_data(todo_list.model_dump())
@@ -115,13 +118,18 @@ class TodoListResource(Resource):
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
-        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
-
-        data = request.get_json()
-        update_data = TodoListUpdateDTO(**data).dict(exclude_unset=True)
 
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
+        list_service.get_list(list_id)
+
+        # 2, Checking permission
+        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
+
+        # 3, Update List
+        data = request.get_json()
+        update_data = TodoListUpdateDTO(**data).dict(exclude_unset=True)
+
         updated_list = list_service.update_list(list_id, update_data)
 
         return {
@@ -137,17 +145,14 @@ class TodoListResource(Resource):
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
-        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
 
-        # check list is exist
+        # 1, check list is exist
         list_coll: Collection = get_mongo_collection("todo_lists")
         list_service = TodoListService(list_coll)
-        
-        try:
-            # 检查列表是否存在
-            list_service.get_list(list_id)
-        except ResourceNotFoundError:
-            raise ResourceNotFoundError(f"List {list_id} not found")
+        list_service.get_list(list_id)
+
+        # 2, check permission
+        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
 
         # 删除MongoDB中的列表数据
         deleted = list_service.delete_list(list_id)
