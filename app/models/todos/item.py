@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, field_validator
 from datetime import datetime
 from typing import Optional, List
 import enum
@@ -30,13 +30,13 @@ class TodoItem(BaseModel):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    @validator("title")
+    @field_validator("title")
     def title_not_empty(cls, v):
         if not v.strip():
             raise ValueError("Item title cannot be empty")
         return v.strip()
 
-    @validator("tags")
+    @field_validator("tags")
     def tags_uniq(cls, v):
         return list(set(v))  # 去重
 

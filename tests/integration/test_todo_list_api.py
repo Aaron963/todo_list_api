@@ -65,7 +65,6 @@ def test_todo_list_create_success():
     assert "list_id" in result["data"]
     assert "owner_id" in result["data"]
     #
-    # # 保存列表ID
     test_data_manager.save_list_id("work_list", result["data"]["list_id"])
 
 
@@ -370,7 +369,7 @@ def test_todo_list_create_empty_title():
 
     assert response.status_code == 400
     assert result["code"] == 400
-    assert "invalid request data" in result["message"].lower()
+    assert "Invalid request data" in result["message"]
 
 
 def test_todo_list_create_title_too_long():
