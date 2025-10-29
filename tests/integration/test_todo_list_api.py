@@ -196,9 +196,6 @@ def test_todo_list_get_nonexistent():
     response = requests.get(url=f"{BASE_URL}/lists/{nonexistent_id}",
                             headers=auth_headers)
     result = response.json()
-    print('result', result)
-
-    # 验证响应
     assert response.status_code == 404
     assert result["code"] == 404
     assert "not found" in result["message"].lower()
@@ -228,8 +225,6 @@ def test_todo_list_update_success():
     }
     response = requests.put(f"{BASE_URL}/lists/{list_id}", headers=auth_headers, json=update_data)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 201
     assert result["code"] == 200
     assert result["message"] == "List updated"
@@ -264,8 +259,6 @@ def test_todo_list_update_other_user():
     update_data = {"title": "Hacked Title"}
     response = requests.put(f"{BASE_URL}/lists/{other_list_id}", headers=user1_headers, json=update_data)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 403
     assert result["code"] == 403
     assert "permission" in result["message"].lower()
@@ -292,8 +285,6 @@ def test_todo_list_delete_success():
     response = requests.delete(url=f"{BASE_URL}/lists/{list_id}",
                                headers=auth_headers)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 200
     assert result["code"] == 200
     assert f"List {list_id} deleted successfully" in result["message"]
@@ -330,8 +321,6 @@ def test_todo_list_delete_other_user():
     response = requests.delete(url=f"{BASE_URL}/lists/{other_list_id}",
                                headers=user1_headers)
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 403
     assert result["code"] == 403
     assert "permission" in result["message"].lower()
@@ -432,8 +421,6 @@ def test_todo_list_update_partial():
                             headers=auth_headers,
                             json={"title": "Updated Title Only"})
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 201
     assert result["code"] == 200
     assert result["data"]["title"] == "Updated Title Only"
@@ -468,8 +455,6 @@ def test_todo_list_create_without_description():
                                  # 不提供description字段
                              })
     result = response.json()
-
-    # 验证响应
     assert response.status_code == 201
     assert result["code"] == 200
     assert result["data"]["title"] == "No Description List"
