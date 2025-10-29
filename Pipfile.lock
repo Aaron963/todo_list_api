@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "230d1e3e1ddaa91ec5b2e8eb6ae6c69d482e041600097f86b6ac47ae7f5ebadf"
+            "sha256": "ec535a6383fb927b26eb4ad5b218ad608e5b57c0eeabff0cbdc8ebaf427481e8"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -30,6 +30,14 @@
             ],
             "markers": "python_version >= '3.8'",
             "version": "==0.7.0"
+        },
+        "async-timeout": {
+            "hashes": [
+                "sha256:39e3809566ff85354557ec2398b55e096c8364bacac9405a7a1fa429e77fe76c",
+                "sha256:d9321a7a3d5a6a5e187e824d2fa0793ce379a202935782d555d6e9d2735677d3"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==5.0.1"
         },
         "bcrypt": {
             "hashes": [
@@ -66,6 +74,14 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==1.9.0"
+        },
+        "cachelib": {
+            "hashes": [
+                "sha256:209d8996e3c57595bee274ff97116d1d73c4980b2fd9a34c7846cd07fd2e1a48",
+                "sha256:8c8019e53b6302967d4e8329a504acf75e7bc46130291d30188a6e4e58162516"
+            ],
+            "markers": "python_version >= '3.8'",
+            "version": "==0.13.0"
         },
         "click": {
             "hashes": [
@@ -114,6 +130,15 @@
             "index": "pypi",
             "markers": "python_version >= '3.8'",
             "version": "==2.3.3"
+        },
+        "flask-caching": {
+            "hashes": [
+                "sha256:65d7fd1b4eebf810f844de7de6258254b3248296ee429bdcb3f741bcbf7b98c9",
+                "sha256:d3efcf600e5925ea5a2fcb810f13b341ae984f5b52c00e9d9070392f3ca10761"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.8'",
+            "version": "==2.3.1"
         },
         "flask-jwt-extended": {
             "hashes": [
@@ -630,6 +655,15 @@
                 "sha256:5ddf76296dd8c44c26eb8f4b6f35488f3ccbf6fbbd7adee0b7262d43f0ec2f00"
             ],
             "version": "==2025.2"
+        },
+        "redis": {
+            "hashes": [
+                "sha256:4977af3c7d67f8f0eb8b6fec0dafc9605db9343142f634041fb0235f67c0588a",
+                "sha256:c949df947dca995dc68fdf5a7863950bf6df24f8d6022394585acc98e81624f1"
+            ],
+            "index": "pypi",
+            "markers": "python_version >= '3.9'",
+            "version": "==7.0.1"
         },
         "six": {
             "hashes": [
