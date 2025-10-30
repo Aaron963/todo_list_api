@@ -82,10 +82,18 @@ services:
   redis:
     image: redis:7-alpine
     container_name: tdl-redis-${FLASK_ENV}
-    volumes:
-      - redis_data_${FLASK_ENV}:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_PORT=${REDIS_PORT}
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
+    volumes:
+      - ./scripts/redis/redis.conf:/usr/local/etc/redis/redis.conf
+      - redis_data_${FLASK_ENV}:/data
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf
+      --port ${REDIS_PORT}
+      --requirepass ${REDIS_PASSWORD}
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: ${HEALTHCHECK_INTERVAL:-5s}
