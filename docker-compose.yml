@@ -27,7 +27,7 @@ services:
       - REDIS_PORT=${REDIS_PORT}
     # volumes for live code updates
     volumes:
-      - ./:/app
+      - ./app/:/app/app
     ports:
       - "${API_PORT}:${API_PORT}"
     depends_on:

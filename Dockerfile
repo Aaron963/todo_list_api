@@ -27,7 +27,7 @@ COPY Pipfile Pipfile.lock ./
 RUN pipenv install --system
 
 # 复制应用代码
-COPY . .
+COPY app/ ./app/
 
 # 设置timezone
 ENV TZ=Asia/Shanghai
