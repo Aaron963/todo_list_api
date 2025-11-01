@@ -19,7 +19,6 @@ api = Api(prefix="/api/lists/<string:list_id>/items")
 
 
 def init_app(app):
-    """初始化TDL APP"""
     api.init_app(app)
 
 
@@ -27,12 +26,18 @@ class TodoItemCollection(Resource):
     @jwt_required()
     @handle_exceptions
     def post(self, list_id: str):
-        """创建TDL的Item"""
+        """
+        Create new item
+        {{base_url}}/api/lists/{{list_id}}/items
+        Args:
+            list_id:
+        Returns:
+        """
         user_id = get_jwt_identity()
         data = request.get_json()
         item_create = TodoItemCreateDTO(**data)
 
-        # 验证权限和列表存在
+        # 2, check permissions
         db: Session = next(get_db())
         user_service = UserService(db)
         user_service.check_list_permission(user_id, list_id, PermType.EDIT)
@@ -64,7 +69,18 @@ class TodoItemCollection(Resource):
     @jwt_required()
     @handle_exceptions
     def get(self, list_id: str):
-        """获取列表中的项（支持过滤排序）"""
+        """
+        Get All Items in List (with Filtering)
+        {{base_url}}/api/lists/{{list_id}}/items?priority=High&due_date=&sort_by=due_date
+        Args:
+            list_id:
+            status:
+            priority:
+            due_date:
+            sort_by:
+            order:
+        Returns:
+        """
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
@@ -97,7 +113,15 @@ class TodoItemResource(Resource):
     @jwt_required()
     @handle_exceptions
     def get(self, list_id: str, item_id: str):
-        """Get Single item by id"""
+        """
+        Get Single Item
+        {{base_url}}/api/lists/{{list_id}}/items/{{item_id}}
+        Args:
+            list_id:
+            item_id:
+        Returns:
+
+        """
         user_id = get_jwt_identity()
         db: Session = next(get_db())
         user_service = UserService(db)
@@ -115,23 +139,28 @@ class TodoItemResource(Resource):
     @jwt_required()
     @handle_exceptions
     def put(self, list_id: str, item_id: str):
-        """更新项"""
+        """
+        Update Item
+        {{base_url}}/api/lists/{{list_id}}/items/{{item_id}}
+        Args:
+            list_id:
+            item_id:
+        Returns:
+
+        """
         user_id = get_jwt_identity()
-        db: Session = next(get_db())
-        user_service = UserService(db)
+        user_service = UserService(next(get_db()))
         user_service.check_list_permission(user_id, list_id, PermType.EDIT)
 
-        data = request.get_json()
-        update_data = TodoItemUpdateDTO(**data).dict(exclude_unset=True)
-
-        # 转换枚举类型
+        update_data = TodoItemUpdateDTO(**request.get_json()).model_dump(exclude_none=True)
+        # transfer value to enum type
         if "status" in update_data:
             update_data["status"] = TodoStatus(update_data["status"])
         if "priority" in update_data:
             update_data["priority"] = TodoPriority(update_data["priority"])
 
-        item_coll: Collection = get_mongo_collection("todo_items")
-        item_service = TodoItemService(item_coll)
+        # query from mongo database
+        item_service = TodoItemService(get_mongo_collection("todo_items"))
         updated_item = item_service.update_item(item_id, list_id, update_data)
 
         return {
@@ -143,16 +172,24 @@ class TodoItemResource(Resource):
     @jwt_required()
     @handle_exceptions
     def delete(self, list_id: str, item_id: str):
-        """删除待办事项 - 检查存在性并验证删除结果"""
-        user_id = get_jwt_identity()
-        db: Session = next(get_db())
-        user_service = UserService(db)
-        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
+        """
+        Delete Item
+        {{base_url}}/api/lists/{{list_id}}/items/{{item_id}}
+        Args:
+            list_id:
+            item_id:
 
-        item_coll: Collection = get_mongo_collection("todo_items")
-        item_service = TodoItemService(item_coll)
-        
-        # 先检查待办事项是否存在
+        Returns:
+
+        """
+        user_id = get_jwt_identity()
+        user_service = UserService(next(get_db()))
+        # check permission
+        user_service.check_list_permission(user_id, list_id, PermType.EDIT)
+        # query from mongo database
+        item_service = TodoItemService(get_mongo_collection("todo_items"))
+
+        # check item whether is existed or not
         try:
             item_service.get_item(item_id, list_id)
         except ResourceNotFoundError:

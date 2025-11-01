@@ -1,6 +1,5 @@
 from flask_restful import Resource, Api
 from flask_jwt_extended import create_access_token, create_refresh_token
-from sqlalchemy.orm import Session
 from app.dto.user_dto import UserCreateDTO, UserLoginDTO
 from app.services.user_service import UserService
 from app.extensions.db.db_postgres import get_db
@@ -11,20 +10,20 @@ api = Api(prefix="/api/auth")
 
 
 def init_app(app):
-    """初始化认证API"""
     api.init_app(app)
 
 
 class Register(Resource):
     @handle_exceptions
     def post(self):
-        """User Registration"""
-        data = request.get_json()
-        user_create = UserCreateDTO(**data)
-        db: Session = next(get_db())
-        user_service = UserService(db)
+        """
+        User Registration
+        {{base_url}}/api/auth/register
+        Returns:
 
-        user = user_service.register_user(user_create)
+        """
+        user_service = UserService(next(get_db()))
+        user = user_service.register_user(UserCreateDTO(**request.get_json()))
         access_token = create_access_token(
             identity=user.id,
             additional_claims={"role": user.role.value}
@@ -49,20 +48,24 @@ class Register(Resource):
 class Login(Resource):
     @handle_exceptions
     def post(self):
-        """User Login"""
-        data = request.get_json()
-        user_login = UserLoginDTO(**data)
+        """
+        User Login(token will be expired by 1 day)
+        {{base_url}}/api/auth/login
+        Returns:
 
-        db: Session = next(get_db())
-        user_service = UserService(db)
-        user = user_service.login_user(user_login)
+        """
+        # 1, transfer json to DataModel
+        login_data = UserLoginDTO(**request.get_json())
+
+        # 2, query from database
+        user_service = UserService(next(get_db()))
+        user = user_service.login_user(login_data)
 
         access_token = create_access_token(
             identity=str(user.id),
             additional_claims={"role": user.role.value}
         )
         refresh_token = create_refresh_token(identity=user.id)
-
         return {
             "code": 200,
             "message": "Login successful",

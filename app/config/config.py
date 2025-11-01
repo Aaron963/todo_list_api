@@ -13,7 +13,6 @@ class Config:
     POSTGRES_DB: str = os.getenv("POSTGRES_DB")
     POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "localhost")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
-    # 拼接 PostgreSQL 连接地址
     POSTGRES_URI: str = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 
     # MongoDB：load from .env
@@ -24,15 +23,25 @@ class Config:
     MONGO_DB: str = os.getenv("MONGO_DB")
     MONGO_AUTH_DB: str = os.getenv("MONGO_AUTH_DB")
 
+    REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")
+    REDIS_PORT: str = os.getenv("REDIS_PORT")
+    REDIS_PASSWORD: str = os.getenv("REDIS_PASSWORD")
+
+    # FLASK CACHING
+    CACHE_TYPE: str = os.getenv("CACHE_TYPE")
+    CACHE_REDIS_DB: str = os.getenv("CACHE_REDIS_DB")
+    CACHE_KEY_PREFIX: str = os.getenv("CACHE_KEY_PREFIX")
+    CACHE_DEFAULT_TIMEOUT: str = os.getenv("CACHE_DEFAULT_TIMEOUT")
+
     # FLASK
     FLASK_APP: str = os.getenv("FLASK_APP", "app/__init__.py")
-    FLASK_ENV: str = os.getenv("FLASK_ENV", "production")  # 默认生产环境（安全优先）
+    FLASK_ENV: str = os.getenv("FLASK_ENV", "development")
     API_PORT: int = int(os.getenv("API_PORT", "5000"))
-    API_PREFIX: str = "/api"  # 通用配置，无需环境变量
+    API_PREFIX: str = "/api"
 
-    # JWT 配置：生产环境必须传，开发环境无默认值（强迫用 .env.prod）
+    # JWT
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
-    JWT_ACCESS_TOKEN_EXPIRES: int = 3600  # 1小时过期
+    JWT_ACCESS_TOKEN_EXPIRES: int = 36000  # expired by 1 days
 
     # -------------------------- 生产环境强制校验 --------------------------
     def __post_init__(self):

@@ -135,15 +135,15 @@ https://winter-astronaut-286841.postman.co/workspace/My-Workspace~a1448db5-4ee7-
 ## 3. Start services with Docker Compose:
    Run below command:
    ```bash
-   docker-compose --env-file ./config/.env.dev up --build
+   docker-compose --env-file ./app/config/.env.dev up --build
    ```
    or Run below command(Testing Envioroment):
    ```bash
-   docker-compose --env-file ./config/.env.test up --build
+   docker-compose --env-file ./app/config/.env.test up --build
    ```
    or Run below command(Production Envioroment):
    ```bash
-   docker-compose --env-file ./config/.env.prd up --build
+   docker-compose --env-file ./app/config/.env.prd up --build
    ```
 
 ## 4. Run the scripts file:

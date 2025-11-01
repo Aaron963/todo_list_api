@@ -25,6 +25,13 @@ services:
       - MONGO_PASSWORD=${MONGO_PASSWORD}
       - MONGO_AUTH_DB=${MONGO_AUTH_DB}
       - REDIS_PORT=${REDIS_PORT}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CACHE_TYPE=${CACHE_TYPE}
+      - CACHE_REDIS_DB=${CACHE_REDIS_DB}
+      - CACHE_KEY_PREFIX=${CACHE_KEY_PREFIX}
+      - CACHE_DEFAULT_TIMEOUT=${CACHE_DEFAULT_TIMEOUT}
     # volumes for live code updates
     volumes:
       - ./app/:/app/app

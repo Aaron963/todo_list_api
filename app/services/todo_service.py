@@ -3,7 +3,7 @@ from typing import List, Optional
 from datetime import datetime
 from app.models.todos import TodoList, TodoItem, TodoStatus, TodoPriority
 from app.utils.errors import ResourceNotFoundError
-
+from app.extensions.db.db_redis import cache
 
 class TodoListService:
     def __init__(self, collection: Collection):

@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-from typing import Optional
 from app.models.users import User, UserRole, Permission, PermType
 from app.dto.user_dto import UserCreateDTO, UserLoginDTO
 from app.utils.errors import (
@@ -48,10 +47,10 @@ class UserService:
             Permission.user_id == user_id,
             Permission.list_id == list_id
         ).first()
-        
+
         if not perm:
             raise ForbiddenError(f"User {user_id} has no permission for list {list_id}")
-        
+
         # EDIT 权限包含 VIEW 权限
         if required_perm == PermType.VIEW and perm.perm_type == PermType.EDIT:
             return
@@ -59,10 +58,10 @@ class UserService:
             raise ForbiddenError(f"User {user_id} has no {required_perm} permission for list {list_id}")
 
     def grant_list_permission(self, user_id: int, list_id: str, perm_type: PermType) -> Permission:
-        # 检查用户是否存在
+        # check user is exist
         self.get_user_by_id(user_id)
 
-        # 检查权限是否已存在
+        # check permission is exist
         existing = self.db.query(Permission).filter(
             Permission.user_id == user_id,
             Permission.list_id == list_id
@@ -72,7 +71,7 @@ class UserService:
             self.db.commit()
             return existing
 
-        # 创建新权限
+        # create permission for user
         perm = Permission(
             user_id=user_id,
             list_id=list_id,
@@ -84,7 +83,9 @@ class UserService:
         return perm
 
     def revoke_list_permissions(self, list_id: str) -> int:
-        """删除指定列表的所有权限记录"""
+        """
+        delete all permissions for a list
+        """
         deleted_count = self.db.query(Permission).filter(
             Permission.list_id == list_id
         ).delete()

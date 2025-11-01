@@ -19,7 +19,7 @@ def init_jwt(app):
         return {
             "code": 401,
             "message": "Invalid token"
-        }
+        }, 401
 
     # 未提供令牌回调
     @jwt.unauthorized_loader
